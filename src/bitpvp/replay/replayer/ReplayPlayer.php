@@ -16,6 +16,7 @@ use bitpvp\replay\replayer\event\ReplayStartEvent;
 use bitpvp\replay\replayer\event\ReplayTogglePauseEvent;
 use bitpvp\replay\replayer\util\ReplayGenerator;
 use bitpvp\replay\replayer\util\ReplayPlayDirection;
+use bitpvp\replay\utils\ReplaySkipTickTask;
 use bitpvp\replay\utils\ReplayTimings;
 use pocketmine\block\tile\TileFactory;
 use pocketmine\entity\Entity;
@@ -168,12 +169,14 @@ class ReplayPlayer {
         if ($ticks < 0) {
             throw new \InvalidArgumentException("Ticks to skip cannot be negative");
         }
-        for ($i = 0; $i < $ticks; $i++) {
-            if (!$this->tick($direction)) {
-                break;
-            }
-        }
-        $this->speedTicks = 0;
+        $this->settings->getPlugin()->getScheduler()->scheduleRepeatingTask(
+            new ReplaySkipTickTask(
+                fn(int $_) => $this->tick($direction),
+                $ticks,
+                5,
+                fn() => $this->speedTicks = 0
+            ), 1
+        );
     }
 
     public function skipToTick(int $tick): void {
