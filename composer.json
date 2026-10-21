@@ -1,0 +1,25 @@
+{
+    "name": "bitpvp/replay",
+    "description": "A high-performance, thread-safe PocketMine-MP replay library",
+    "type": "library",
+    "require": {
+        "php": "^8.3",
+        "ext-pmmpthread": "*",
+        "ext-encoding": "*",
+        "ext-zlib": "*"
+    },
+    "autoload": {
+        "psr-4": {
+            "bitpvp\\replay\\": "src/bitpvp/replay/"
+        }
+    },
+    "require-dev": {
+        "pocketmine/pocketmine-mp": "^5.44"
+    },
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "https://github.com/bitpvp-new/PocketMine-MP"
+        }
+    ]
+}

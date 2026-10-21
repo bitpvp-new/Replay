@@ -1,0 +1,6 @@
+name: Replay
+antigen: bitpvp\replay
+api: 5.0.0
+version: 1.0.0
+author: bitpvp
+description: A high-performance, thread-safe PocketMine-MP replay library

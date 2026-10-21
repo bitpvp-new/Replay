@@ -1,0 +1,42 @@
+<?php
+
+declare(strict_types=1);
+
+namespace bitpvp\replay\thread\result;
+
+use bitpvp\replay\thread\ThreadPacket;
+
+final class LoadJsonStorageResultPacket extends ThreadPacket {
+
+    public function __construct(
+        private readonly string $replayId,
+        private readonly bool $success,
+        private readonly string $jsonRaw,
+        private readonly ?string $rawBuffer,
+        private readonly ?string $error,
+    ) {}
+
+    public function execute(): ?ThreadPacket {
+        return null;
+    }
+
+    public function getReplayId(): string {
+        return $this->replayId;
+    }
+
+    public function isSuccess(): bool {
+        return $this->success;
+    }
+
+    public function getJsonRaw(): string {
+        return $this->jsonRaw;
+    }
+
+    public function getRawBuffer(): ?string {
+        return $this->rawBuffer;
+    }
+
+    public function getError(): ?string {
+        return $this->error;
+    }
+}
