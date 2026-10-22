@@ -13,7 +13,11 @@ class ReplayInformation {
         private DateTime $timestamp,
         private int $duration,
         private string $gameDetails = "",
-    ) {}
+    ) {
+        if($this->duration <= 0){
+            throw new \InvalidArgumentException("Duration must be greater than 0");
+        }
+    }
 
     public static function generateIdentifier(int $length = 8): string {
         return substr(bin2hex(random_bytes(16)), 0, $length);
@@ -27,7 +31,7 @@ class ReplayInformation {
         return $this->identifier;
     }
 
-    public function getTimestamp(): DateTime {
+    public function getDateTime(): DateTime {
         return $this->timestamp;
     }
 

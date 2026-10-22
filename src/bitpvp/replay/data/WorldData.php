@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace bitpvp\replay\data;
 
 use bitpvp\replay\utils\BinaryStream;
+use bitpvp\replay\utils\IlegalHandlingException;
 use Generator;
 use pocketmine\math\Vector3;
 use pocketmine\nbt\tag\CompoundTag;
@@ -39,9 +40,17 @@ class WorldData {
     }
 
     public function addChunk(Chunk $chunk, int $chunkHash): void {
-        if(!isset($this->chunks[$chunkHash])) {
-            $this->chunks[$chunkHash] = clone $chunk;
+        if(isset($this->chunks[$chunkHash])) {
+            throw IlegalHandlingException::create("Cannot override chunk #$chunkHash fromWorldData");
         }
+        $this->chunks[$chunkHash] = clone $chunk;
+    }
+
+    public function removeChunk(Chunk $chunk, int $chunkHash): void {
+        if(!isset($this->chunks[$chunkHash])) {
+            throw IlegalHandlingException::create("Cannot remove chunk #$chunkHash from WorldData, chunk does not exist");
+        }
+        unset($this->chunks[$chunkHash]);
     }
 
     /**

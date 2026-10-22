@@ -21,6 +21,7 @@ use bitpvp\replay\action\type\world\SignChangeAction;
 use bitpvp\replay\action\type\world\SetBlockAction;
 use bitpvp\replay\log\type\PlayerDeathEventLog;
 use bitpvp\replay\recorder\Recorder;
+use bitpvp\replay\utils\IlegalHandlingException;
 use pocketmine\block\BaseSign;
 use pocketmine\block\Block;
 use pocketmine\block\VanillaBlocks;
@@ -56,6 +57,8 @@ use pocketmine\event\player\PlayerRespawnEvent;
 use pocketmine\event\server\DataPacketReceiveEvent;
 use pocketmine\event\server\DataPacketSendEvent;
 use pocketmine\event\world\ChunkLoadEvent;
+use pocketmine\event\world\ChunkUnloadEvent;
+use pocketmine\event\world\WorldUnloadEvent;
 use pocketmine\lang\Translatable;
 use pocketmine\network\mcpe\protocol\ActorEventPacket;
 use pocketmine\network\mcpe\protocol\AnimatePacket;
@@ -169,7 +172,7 @@ class RecordListener implements Listener {
         if (!$this->recorder->canRecordEntity($entity = $event->getEntity()) || !$entity->isAlive()) {
             return;
         }
-        $this->recorder->addAction(ActorEventAction::create($entity->getId(), ActorEvent::HURT_ANIMATION, 0));
+        $this->recorder->addAction(ActorEventAction::create($entity->getId(), ActorEvent::HURT_ANIMATION, 0, null));
     }
 
     /** @priority MONITOR */
@@ -235,7 +238,7 @@ class RecordListener implements Listener {
         } elseif ($packet instanceof ActorEventPacket) {
             $entity = $player->getWorld()->getEntity($packet->actorRuntimeId);
             if ($entity !== null && $entity->isAlive() && $this->recorder->canRecordEntity($entity)) {
-                $this->recorder->addAction(ActorEventAction::create($packet->actorRuntimeId, $packet->eventId, $packet->eventData));
+                $this->recorder->addAction(ActorEventAction::create($packet->actorRuntimeId, $packet->eventId, $packet->eventData, $packet->firePosition));
             }
         } elseif ($packet instanceof EmotePacket) {
             $id = $packet->getActorRuntimeId();
@@ -273,7 +276,7 @@ class RecordListener implements Listener {
                     )));
                 }
             }
-            return; // only need one target for outgoing broadcasts
+            break; // only need one target for outgoing broadcasts
         }
     }
 
@@ -299,8 +302,9 @@ class RecordListener implements Listener {
         foreach ($event->getBlockList() as $block) {
             $pos = $block->getPosition();
             $air = VanillaBlocks::AIR();
-            $air->position($pos->getWorld(), $pos->getFloorX(), $pos->getFloorY(), $pos->getFloorZ());
-            $this->recorder->addAction(SetBlockAction::createAt($air, $pos->getWorld(), $pos->getFloorX(), $pos->getFloorY(), $pos->getFloorZ()));
+            [$x, $y, $z] = [$pos->getFloorX(),$pos->getFloorY(),$pos->getFloorZ()];
+            $air->position($pos->getWorld(), $x, $y, $z);
+            $this->recorder->addAction(SetBlockAction::createAt($air, $pos->getWorld(), $x, $y, $z));
         }
     }
 
@@ -415,5 +419,19 @@ class RecordListener implements Listener {
             $event->getChunk(),
             World::chunkHash($event->getChunkX(), $event->getChunkZ())
         );
+    }
+
+    public function onChunkUnload(ChunkUnloadEvent $event): void {
+        if ($event->getWorld() !== $this->recorder->getWorld()) {
+            return;
+        }
+
+        $this->recorder->removeChunk($event->getWorld(), $event->getChunk(), World::chunkHash($event->getChunkX(), $event->getChunkZ()));
+    }
+
+    public function onWorldUnload(WorldUnloadEvent $event): void {
+        if($event->getWorld() === $this->recorder->getWorld()) {
+            throw IlegalHandlingException::create("Trying to unload a world that is being recorded (world=". $this->recorder->getWorld()->getFolderName().")");
+        }
     }
 }

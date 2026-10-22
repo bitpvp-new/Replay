@@ -8,6 +8,7 @@ use bitpvp\replay\action\ActionIds;
 use bitpvp\replay\action\type\EntityAction;
 use bitpvp\replay\replayer\ReplayPlayer;
 use bitpvp\replay\utils\BinaryStream;
+use pocketmine\math\Vector3;
 use pocketmine\network\mcpe\protocol\ActorEventPacket;
 
 class ActorEventAction extends EntityAction {
@@ -16,12 +17,14 @@ class ActorEventAction extends EntityAction {
 
     private int $eventId;
     private int $eventData;
+    private ?Vector3 $firePosition;
 
-    public static function create(int $entityId, int $eventId, int $eventData): self {
+    public static function create(int $entityId, int $eventId, int $eventData, ?Vector3 $firePosition): self {
         $action = new self();
         $action->entityId = $entityId;
         $action->eventId = $eventId;
         $action->eventData = $eventData;
+        $action->firePosition = $firePosition;
         return $action;
     }
 
@@ -29,12 +32,14 @@ class ActorEventAction extends EntityAction {
         parent::serialize($stream);
         $stream->putByte($this->eventId);
         $stream->putInt($this->eventData);
+        $stream->putVector3Nullable($this->firePosition);
     }
 
     public function deserialize(BinaryStream $stream): void {
         parent::deserialize($stream);
         $this->eventId = $stream->getByte();
         $this->eventData = $stream->getInt();
+        $this->firePosition = $stream->getVector3Nullable();
     }
 
     public function handle(ReplayPlayer $replay): void {
@@ -44,7 +49,7 @@ class ActorEventAction extends EntityAction {
         }
         $replay->getWorld()->broadcastPacketToViewers(
             $entity->getPosition(),
-            ActorEventPacket::create($entity->getId(), $this->eventId, $this->eventData, null)
+            ActorEventPacket::create($entity->getId(), $this->eventId, $this->eventData, $this->firePosition)
         );
     }
 }

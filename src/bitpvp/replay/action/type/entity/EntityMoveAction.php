@@ -49,7 +49,7 @@ class EntityMoveAction extends EntityAction {
             $entity->teleport($targetLoc);
             return;
         }
-        $entity->setPositionAndRotation(Position::fromObject($this->location, $replay->getWorld()), $this->location->getYaw(), $this->location->getPitch());
+        $entity->setPositionAndRotation($targetLoc, $targetLoc->yaw, $targetLoc->pitch);
     }
 
     public function handleReversed(ReplayPlayer $replay): ?Action {

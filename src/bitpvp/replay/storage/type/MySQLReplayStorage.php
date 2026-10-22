@@ -47,7 +47,7 @@ class MySQLReplayStorage implements ReplayStorage {
             "replay.save",
             [
                 "id"           => $id,
-                "timestamp"    => $information->getTimestamp()->getTimestamp(),
+                "timestamp"    => $information->getDateTime()->getTimestamp(),
                 "duration"     => $information->getDuration(),
                 "game_details" => $information->getGameDetails(),
                 "data"         => $compressedData,

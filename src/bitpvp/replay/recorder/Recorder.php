@@ -204,6 +204,19 @@ class Recorder {
         $world->registerChunkListener($this->chunkListener, ...self::xzFromHash($chunkHash));
     }
 
+    public function removeChunk(World $world, Chunk $chunk, int $chunkHash): void {
+        $name = $world->getFolderName();
+        if(!isset($this->worldDatum[$name])) {
+            $this->worldDatum[$name] = WorldData::create($world);
+        }
+
+        if(!$this->settings->shouldRecordWorldSnapshot()) {
+            return;
+        }
+
+        $this->worldDatum[$name]->removeChunk($chunk, $chunkHash);
+    }
+
     public function addEntity(Entity $entity): void {
         if ($entity instanceof ItemEntity) {
             $this->addAction(EntitySpawnItemAction::create($entity));

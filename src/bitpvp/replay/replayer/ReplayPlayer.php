@@ -47,6 +47,8 @@ class ReplayPlayer {
     /** @var array<int, Action[]> */
     private array $reversed = [];
 
+    private int $duration;
+
     public function __construct(
         private ReplaySettings $settings,
         private Player $viewer,
@@ -55,6 +57,7 @@ class ReplayPlayer {
     ) {
         $this->speed = $settings->getSpeed();
         $this->playDirection = ReplayPlayDirection::FORWARDS;
+        $this->duration = $data->getInformation()->getDuration();
         $this->switchWorld(array_key_first($this->data->getWorldDatum()));
 
         $this->task = $settings->getPlugin()->getScheduler()->scheduleRepeatingTask(
@@ -107,16 +110,12 @@ class ReplayPlayer {
                     $action->handle($this);
                 }
             }
-        }
-
-        if (!$reversed) {
             foreach ($this->data->getEventLogsByTick($this->currentTick) as $eventLog) {
                 $eventLog->handle($this);
             }
         }
 
         $this->currentTick += $reversed ? -1 : 1;
-        $duration = $this->data->getInformation()->getDuration();
 
         if ($this->currentTick < 0) {
             $this->currentTick = 0;
@@ -128,27 +127,24 @@ class ReplayPlayer {
             return false;
         }
 
-        if ($this->currentTick >= $duration) {
-            if ($this->settings->isLoop()) {
-                $this->skip(ReplayPlayDirection::BACKWARDS, $this->currentTick + 1);
-                $this->speedTicks = 0;
-                (new ReplayRestartEvent($this))->call();
-            } else {
+        if ($this->currentTick >= $this->duration) {
+            if (!$this->settings->isLoop()) {
                 $this->end();
+                return false;
             }
+
+            $this->skip(ReplayPlayDirection::BACKWARDS, $this->currentTick + 1);
+            $this->speedTicks = 0;
+            (new ReplayRestartEvent($this))->call();
             return false;
         }
 
         // Display progress using the experience bar
-        if ($this->currentTick === 0) {
-            $this->viewer->getXpManager()->setXpAndProgress(0, 0);
-        } else {
-            $this->viewer->getXpManager()->setXpAndProgress(
-                (int)floor($this->currentTick / 20),
-                $this->currentTick / $duration
-            );
-        }
 
+        $this->viewer->getXpManager()->setXpAndProgress(
+            (int)floor($this->currentTick / 20),
+            $this->currentTick / $this->duration
+        );
         return true;
     }
 
@@ -272,7 +268,7 @@ class ReplayPlayer {
         if (!isset($this->entities[$entityId])) {
             return;
         }
-        if (!$this->entities[$entityId]->isFlaggedForDespawn()) {
+        if (!$this->entities[$entityId]->isClosed()) {
             $this->entities[$entityId]->flagForDespawn();
         }
         unset($this->entities[$entityId]);
@@ -317,15 +313,15 @@ class ReplayPlayer {
         }
 
         $id = uniqid('replay_');
-        Server::getInstance()->getWorldManager()->generateWorld(
+        $this->world->getServer()->getWorldManager()->generateWorld(
             $id,
-            (new WorldCreationOptions())
+            WorldCreationOptions::create()
                 ->setGeneratorClass(ReplayGenerator::class)
                 ->setSpawnPosition($worldData->getSpawn()),
             false
         );
 
-        $world = Server::getInstance()->getWorldManager()->getWorldByName($id);
+        $world = $this->world->getServer()->getWorldManager()->getWorldByName($id);
         if ($world === null) {
             return;
         }
@@ -382,12 +378,12 @@ class ReplayPlayer {
         }
         $name = $this->world->getFolderName();
         foreach ($this->entities as $entity) {
-            if (!$entity->isFlaggedForDespawn()) {
+            if (!$entity->isClosed()) {
                 $entity->flagForDespawn();
             }
         }
         $this->entities = [];
-        $manager = Server::getInstance()->getWorldManager();
+        $manager = $this->world->getServer()->getWorldManager();
         if ($manager->isWorldLoaded($name)) {
             $manager->unloadWorld($this->world, false);
         }
