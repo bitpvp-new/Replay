@@ -19,6 +19,7 @@ use bitpvp\replay\action\type\world\BlockEventAction;
 use bitpvp\replay\action\type\world\LevelEventAction;
 use bitpvp\replay\action\type\world\SignChangeAction;
 use bitpvp\replay\action\type\world\SetBlockAction;
+use bitpvp\replay\listener\handler\RecordPacketHandler;
 use bitpvp\replay\log\type\PlayerDeathEventLog;
 use bitpvp\replay\recorder\Recorder;
 use bitpvp\replay\utils\IlegalHandlingException;
@@ -73,9 +74,13 @@ use pocketmine\world\World;
 
 class RecordListener implements Listener {
 
+    private RecordPacketHandler $packetHandler;
+
     public function __construct(
         private Recorder $recorder
-    ) {}
+    ) {
+        $this->packetHandler = new RecordPacketHandler($this->recorder);
+    }
 
     /** @priority MONITOR */
     public function onChat(PlayerChatEvent $event): void {
@@ -225,28 +230,12 @@ class RecordListener implements Listener {
     /** @priority MONITOR */
     public function onPacketReceive(DataPacketReceiveEvent $event): void {
         $player = $event->getOrigin()->getPlayer();
+
         if ($player === null || $player->getWorld() !== $this->recorder->getWorld()) {
             return;
         }
-        $packet = $event->getPacket();
 
-        if ($packet instanceof AnimatePacket) {
-            $entity = $player->getWorld()->getEntity($packet->actorRuntimeId);
-            if ($entity !== null && $entity->isAlive() && $this->recorder->canRecordEntity($entity)) {
-                $this->recorder->addAction(PlayerAnimationAction::create($packet->actorRuntimeId, $packet->action));
-            }
-        } elseif ($packet instanceof ActorEventPacket) {
-            $entity = $player->getWorld()->getEntity($packet->actorRuntimeId);
-            if ($entity !== null && $entity->isAlive() && $this->recorder->canRecordEntity($entity)) {
-                $this->recorder->addAction(ActorEventAction::create($packet->actorRuntimeId, $packet->eventId, $packet->eventData, $packet->firePosition));
-            }
-        } elseif ($packet instanceof EmotePacket) {
-            $id = $packet->getActorRuntimeId();
-            $entity = $player->getWorld()->getEntity($id);
-            if ($entity !== null && $entity->isAlive() && $this->recorder->canRecordEntity($entity)) {
-                $this->recorder->addAction(EntityPlayEmoteAction::create($id, $packet->getEmoteId()));
-            }
-        }
+        $event->getPacket()->handle($this->packetHandler);
     }
 
     /** @priority MONITOR */
@@ -257,24 +246,7 @@ class RecordListener implements Listener {
                 continue;
             }
             foreach ($event->getPackets() as $packet) {
-                if ($packet instanceof LevelEventPacket) {
-                    $this->recorder->addAction(LevelEventAction::create($packet->eventId, $packet->eventData, $packet->position));
-                } elseif ($packet instanceof BlockEventPacket) {
-                    $this->recorder->addAction(BlockEventAction::create($packet->eventType, $packet->eventData, $packet->blockPosition));
-                } elseif ($packet instanceof SetActorDataPacket) {
-                    $id = $packet->actorRuntimeId;
-                    $entity = $player->getWorld()->getEntity($id);
-                    if ($entity !== null && $entity->isAlive() && !$entity->isFlaggedForDespawn() && $this->recorder->canRecordEntity($entity)) {
-                        $this->recorder->addAction(ActorSetMetadataAction::create($id, $packet->metadata));
-                    }
-                } elseif ($packet instanceof UpdateBlockPacket && $packet->dataLayerId === UpdateBlockPacket::DATA_LAYER_NORMAL) {
-                    $position = $packet->blockPosition;
-                    $this->recorder->addAction(SetBlockAction::create($player->getWorld()->getBlockAt(
-                        $position->getX(),
-                        $position->getY(),
-                        $position->getZ()
-                    )));
-                }
+                $packet->handle($this->packetHandler);
             }
             break; // only need one target for outgoing broadcasts
         }

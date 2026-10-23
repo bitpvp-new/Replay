@@ -54,7 +54,7 @@ class PlayerDeathEventLog extends EventLog {
     public function handle(ReplayPlayer $replay): void {
         $entity = $replay->getEntity($this->playerId);
         if ($entity !== null) {
-            $replay->getViewer()->teleport($entity->getPosition());
+            $replay->despawnEntity($this->playerId);
         }
     }
 }
