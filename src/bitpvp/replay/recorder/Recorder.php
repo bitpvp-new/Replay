@@ -25,6 +25,9 @@ use bitpvp\replay\ReplayAPI;
 use bitpvp\replay\thread\packet\SaveReplayPacket;
 use bitpvp\replay\thread\ReplayThread;
 use bitpvp\replay\utils\ReplayTimings;
+use bitpvp\task\Task;
+use bitpvp\task\TaskCancelException;
+use bitpvp\task\TaskManager;
 use DateTime;
 use pocketmine\entity\Entity;
 use pocketmine\entity\Living;
@@ -45,7 +48,7 @@ class Recorder {
     private RecordChunkListener $chunkListener;
     private DateTime $timestamp;
     private World $world;
-    private TaskHandler $tickTask;
+    private bool $ended = false;
 
     /** @var array<string, WorldData> */
     private array $worldDatum = [];
@@ -68,10 +71,10 @@ class Recorder {
         $this->chunkListener = new RecordChunkListener($this);
         $this->changeWorld($world);
 
-        $this->tickTask = $settings->getPlugin()->getScheduler()->scheduleRepeatingTask(
-            new ClosureTask($this->tick(...)),
-            $settings->getRecordInterval()
-        );
+
+        TaskManager::create()
+            ->repeating($this->settings->getRecordInterval())
+            ->whenCalled($this->tick(...));
 
         $world->getServer()->getPluginManager()->registerEvents(
             $this->listener,
@@ -83,7 +86,8 @@ class Recorder {
      * @param \Closure(string $replayId, bool $success, string $pathOrError): void $onSaved
      */
     public function end(string $replayId, \Closure $onSaved): void {
-        $this->tickTask->cancel();
+        if($this->ended) return;
+        $this->ended = true;
         $this->world->unregisterChunkListenerFromAll($this->chunkListener);
 
         foreach ($this->world->getEntities() as $entity) {
@@ -165,6 +169,9 @@ class Recorder {
     }
 
     private function tick(): void {
+        if($this->ended){
+            TaskCancelException::cancel();
+        }
         $timings = ReplayTimings::recordingTick();
         $timings->startTiming();
         try {

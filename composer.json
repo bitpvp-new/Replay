@@ -6,7 +6,8 @@
         "php": "^8.3",
         "ext-pmmpthread": "*",
         "ext-encoding": "*",
-        "ext-zlib": "*"
+        "ext-zlib": "*",
+        "bitpvp/task-manager": "dev-stable"
     },
     "autoload": {
         "psr-4": {
@@ -20,6 +21,10 @@
         {
             "type": "vcs",
             "url": "https://github.com/bitpvp-new/PocketMine-MP"
+        },
+        {
+            "type": "vcs",
+            "url": "https://github.com/JoggingSplash/TaskManager.git"
         }
     ]
 }

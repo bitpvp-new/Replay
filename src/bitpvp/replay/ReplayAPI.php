@@ -26,11 +26,13 @@ use bitpvp\replay\thread\result\LoadJsonStorageResultPacket;
 use bitpvp\replay\thread\result\LoadReplayResultPacket;
 use bitpvp\replay\thread\result\SaveJsonStorageResultPacket;
 use bitpvp\replay\thread\result\SaveReplayResultPacket;
+use bitpvp\task\TaskManager;
 use LogicException;
 use pocketmine\event\EventPriority;
 use pocketmine\event\plugin\PluginDisableEvent;
 use pocketmine\player\Player;
 use pocketmine\plugin\Plugin;
+use pocketmine\plugin\PluginBase;
 use pocketmine\Server;
 use pocketmine\world\generator\GeneratorManager;
 use pocketmine\world\World;
@@ -80,10 +82,15 @@ final class ReplayAPI {
 
     private function __construct() {}
 
-    public static function register(Plugin $plugin): void {
+    public static function register(PluginBase $plugin): void {
         if (self::$plugin !== null) {
             throw new LogicException("ReplayAPI is already registered");
         }
+
+        if(!TaskManager::isRegistered()){
+            TaskManager::register($plugin);
+        }
+
         self::$plugin = $plugin;
         self::$logger = new PrefixedLogger($plugin->getLogger(), "Replay");
 
@@ -92,7 +99,7 @@ final class ReplayAPI {
 
         GeneratorManager::getInstance()->addGenerator(ReplayGenerator::class, "replay", fn() => null, true);
 
-        $notifier = Server::getInstance()->getTickSleeper()->addNotifier(self::collectThreadResults(...));
+        $notifier = $plugin->getServer()->getTickSleeper()->addNotifier(self::collectThreadResults(...));
         self::$notifierId = $notifier->getNotifierId();
 
         self::$thread = new ReplayThread($notifier);
@@ -100,7 +107,7 @@ final class ReplayAPI {
         self::getLogger()->info("Replay API initialized");
         self::getLogger()->debug("Background worker started");
 
-        Server::getInstance()->getPluginManager()->registerEvent(PluginDisableEvent::class, function(PluginDisableEvent $event): void {
+        $plugin->getServer()->getPluginManager()->registerEvent(PluginDisableEvent::class, function(PluginDisableEvent $event): void {
             if($event->getPlugin() === self::$plugin){
                 self::shutdown();
             }

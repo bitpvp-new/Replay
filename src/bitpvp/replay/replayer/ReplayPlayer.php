@@ -18,6 +18,8 @@ use bitpvp\replay\replayer\util\ReplayGenerator;
 use bitpvp\replay\replayer\util\ReplayPlayDirection;
 use bitpvp\replay\utils\ReplaySkipTickTask;
 use bitpvp\replay\utils\ReplayTimings;
+use bitpvp\task\TaskCancelException;
+use bitpvp\task\TaskManager;
 use pocketmine\block\tile\TileFactory;
 use pocketmine\entity\Entity;
 use pocketmine\entity\Human;
@@ -60,8 +62,10 @@ class ReplayPlayer {
         $this->duration = $data->getInformation()->getDuration();
         $this->switchWorld(array_key_first($this->data->getWorldDatum()));
 
-        $this->task = $settings->getPlugin()->getScheduler()->scheduleRepeatingTask(
-            new ClosureTask(function (): void {
+        TaskManager::create()
+            ->repeating(1)
+            ->whenCalled(function(): void {
+                !$this->ended || TaskCancelException::cancel();
                 $this->speedTicks += $this->speed;
                 if (fmod($this->speedTicks, 1) !== 0.0) {
                     return;
@@ -73,9 +77,7 @@ class ReplayPlayer {
                     }
                 }
                 $this->speedTicks = 0;
-            }),
-            1
-        );
+            });
 
         (new ReplayStartEvent($this))->call();
     }
@@ -153,7 +155,6 @@ class ReplayPlayer {
             return;
         }
         $this->ended = true;
-        $this->task->cancel();
         $this->removeCurrentWorld();
         (new ReplayEndEvent($this))->call();
         if ($this->onEnd !== null) {
@@ -165,6 +166,7 @@ class ReplayPlayer {
         if ($ticks < 0) {
             throw new \InvalidArgumentException("Ticks to skip cannot be negative");
         }
+
         $this->settings->getPlugin()->getScheduler()->scheduleRepeatingTask(
             new ReplaySkipTickTask(
                 fn(int $_) => $this->tick($direction),
