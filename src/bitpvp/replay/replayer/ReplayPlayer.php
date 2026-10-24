@@ -315,7 +315,8 @@ class ReplayPlayer {
         }
 
         $id = uniqid('replay_');
-        $this->world->getServer()->getWorldManager()->generateWorld(
+        $server = $this->viewer->getServer();
+        $server->getWorldManager()->generateWorld(
             $id,
             WorldCreationOptions::create()
                 ->setGeneratorClass(ReplayGenerator::class)
@@ -323,7 +324,7 @@ class ReplayPlayer {
             false
         );
 
-        $world = $this->world->getServer()->getWorldManager()->getWorldByName($id);
+        $world = $server->getWorldManager()->getWorldByName($id);
         if ($world === null) {
             return;
         }
