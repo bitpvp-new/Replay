@@ -66,11 +66,11 @@ class Recorder {
         private ReplayThread $thread,
         World $world
     ) {
-        $this->changeWorld($world);
         $this->timestamp = new DateTime();
-        $this->listener = new RecordListener($this);
         $this->chunkListener = new RecordChunkListener($this);
-
+        $this->changeWorld($world);
+        $this->listener = new RecordListener($this);
+        
         TaskManager::create()
             ->repeating($this->settings->getRecordInterval())
             ->whenCalled($this->tick(...));
