@@ -47,8 +47,8 @@ use pocketmine\Server;
 use pocketmine\world\format\Chunk;
 use pocketmine\world\World;
 
-class Recorder
-{
+class Recorder {
+
     private RecordListener $listener;
     private RecordChunkListener $chunkListener;
     private DateTime $timestamp;
@@ -79,7 +79,7 @@ class Recorder
         $this->chunkListener = new RecordChunkListener($this);
         $this->changeWorld($world);
         $this->listener = new RecordListener($this);
-
+        
         TaskManager::create()
             ->repeating($this->settings->getRecordInterval())
             ->whenCalled($this->tick(...));
@@ -93,8 +93,7 @@ class Recorder
     /**
      * @return string
      */
-    public function getIdentifier(): string
-    {
+    public function getIdentifier(): string {
         return $this->identifier;
     }
 
@@ -105,17 +104,16 @@ class Recorder
      * @return RegisteredListener
      * @throws \ReflectionException
      */
-    public function addEventEndingHandler(Closure $event, int $priority = EventPriority::NORMAL, bool $handleCancelled = false): RegisteredListener
-    {
+    public function addEventEndingHandler(Closure $event, int $priority = EventPriority::NORMAL, bool $handleCancelled = false): RegisteredListener {
         $eventClass = ReplayUtils::parseEventHandler($event);
-        if (!isset($this->eventEndingHandling[$eventClass])) {
+        if(!isset($this->eventEndingHandling[$eventClass])) {
             $this->eventEndingHandling[$eventClass] = [];
         }
 
         return $this->eventEndingHandling[$eventClass][] = $this->world->getServer()->getPluginManager()->registerEvent(
             $eventClass,
-            function (Event $parent) use ($event): void {
-                if (!$event($parent)) {
+            function(Event $parent) use ($event): void {
+                if(!$event($parent)){
                     ReplayAPI::stopRecording($this->identifier);
                 }
             },
@@ -129,11 +127,9 @@ class Recorder
      * @param Closure(string $replayId, bool $success, string $pathOrError): void $onSaved
      * @internal
      */
-    public function end(string $replayId, Closure $onSaved): void
-    {
-        if ($this->ended) {
-            return;
-        }
+    public function end(Closure $onSaved): void {
+        if($this->ended) return;
+        $replayId = $this->identifier;
         $this->ended = true;
         $this->world->unregisterChunkListenerFromAll($this->chunkListener);
 
@@ -156,20 +152,20 @@ class Recorder
         ReplayData::create($information, $this->actions, $this->eventLogs, $this->worldDatum)
             ->encodeAsync($this->settings->getPlugin(), $this->settings->getSerializationBatchSize())
             ->onCompletion(
-                function (string $rawBuffer) use ($storage, $information, $onSaved, $replayId): void {
+                function(string $rawBuffer) use ($storage, $information, $onSaved, $replayId): void {
                     if ($storage !== null) {
-                        ReplayAPI::compressInBackground($rawBuffer, function (string $compressed) use ($storage, $information, $onSaved, $replayId): void {
+                        ReplayAPI::compressInBackground($rawBuffer, function(string $compressed) use ($storage, $information, $onSaved, $replayId): void {
                             $storage->save(
                                 $information,
                                 $compressed,
-                                function (string $id) use ($onSaved): void {
+                                function(string $id) use ($onSaved): void {
                                     $onSaved($id, true, "Saved to storage");
                                 },
-                                function (\Throwable $err) use ($onSaved, $replayId): void {
+                                function(\Throwable $err) use ($onSaved, $replayId): void {
                                     $onSaved($replayId, false, $err->getMessage());
                                 }
                             );
-                        }, function (\Throwable $err) use ($onSaved, $replayId): void {
+                        }, function(\Throwable $err) use ($onSaved, $replayId): void {
                             $onSaved($replayId, false, $err->getMessage());
                         });
                         return;
@@ -181,14 +177,13 @@ class Recorder
                         $rawBuffer
                     ));
                 },
-                static function () use ($onSaved, $replayId): void {
+                static function() use ($onSaved, $replayId): void {
                     $onSaved($replayId, false, "Replay encoding task was cancelled or failed; see the server log");
                 }
             );
     }
 
-    public function changeWorld(World $world): void
-    {
+    public function changeWorld(World $world): void {
         if (isset($this->world)) {
             if ($this->world === $world) {
                 throw new \LogicException("Cannot change to the same world");
@@ -215,13 +210,11 @@ class Recorder
         }
     }
 
-    public function getWorld(): World
-    {
+    public function getWorld(): World {
         return $this->world;
     }
 
-    public function getSettings(): RecordSettings
-    {
+    public function getSettings(): RecordSettings {
         return $this->settings;
     }
 
@@ -229,9 +222,8 @@ class Recorder
      * @return void
      * @throws TaskCancelException
      */
-    private function tick(): void
-    {
-        if ($this->ended) {
+    private function tick(): void {
+        if($this->ended){
             TaskCancelException::cancel();
         }
         $timings = ReplayTimings::recordingTick();
@@ -253,18 +245,15 @@ class Recorder
         }
     }
 
-    public function addEventLog(EventLog $eventLog): void
-    {
+    public function addEventLog(EventLog $eventLog): void {
         $this->eventLogs[max(0, $this->tick)][] = $eventLog;
     }
 
-    public function addAction(Action $action): void
-    {
+    public function addAction(Action $action): void {
         $this->actions[$this->tick][] = $action;
     }
 
-    public function addChunk(World $world, Chunk $chunk, int $chunkHash): void
-    {
+    public function addChunk(World $world, Chunk $chunk, int $chunkHash): void {
         $name = $world->getFolderName();
         if (!isset($this->worldDatum[$name])) {
             $this->worldDatum[$name] = WorldData::create($world);
@@ -276,22 +265,20 @@ class Recorder
         $world->registerChunkListener($this->chunkListener, ...ReplayUtils::xzFromHash($chunkHash));
     }
 
-    public function removeChunk(World $world, Chunk $chunk, int $chunkHash): void
-    {
+    public function removeChunk(World $world, Chunk $chunk, int $chunkHash): void {
         $name = $world->getFolderName();
-        if (!isset($this->worldDatum[$name])) {
+        if(!isset($this->worldDatum[$name])) {
             $this->worldDatum[$name] = WorldData::create($world);
         }
 
-        if (!$this->settings->shouldRecordWorldSnapshot()) {
+        if(!$this->settings->shouldRecordWorldSnapshot()) {
             return;
         }
 
         $this->worldDatum[$name]->removeChunk($chunk, $chunkHash);
     }
 
-    public function addEntity(Entity $entity): void
-    {
+    public function addEntity(Entity $entity): void {
         if ($entity instanceof ItemEntity) {
             $this->addAction(EntitySpawnItemAction::create($entity));
         } elseif ($entity instanceof Living && !$entity instanceof Human) {
@@ -312,8 +299,7 @@ class Recorder
         }
     }
 
-    public function removeEntity(Entity $entity): void
-    {
+    public function removeEntity(Entity $entity): void {
         $this->addAction(ActorDespawnAction::create($entity->getId()));
         unset($this->entityLocations[$entity->getId()]);
         if ($entity instanceof Living) {
@@ -321,8 +307,7 @@ class Recorder
         }
     }
 
-    public function recordEntityMovement(Entity $entity, ?Location $location = null, bool $teleport = false): void
-    {
+    public function recordEntityMovement(Entity $entity, ?Location $location = null, bool $teleport = false): void {
         if (!$this->canRecordEntity($entity)) {
             return;
         }
@@ -335,8 +320,7 @@ class Recorder
         $this->entityLocations[$entity->getId()] = clone $location;
     }
 
-    public function canRecordEntity(Entity $entity): bool
-    {
+    public function canRecordEntity(Entity $entity): bool {
         return $entity->getWorld() === $this->world
             && (!$entity instanceof Player || !$entity->isSpectator());
     }

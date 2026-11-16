@@ -190,7 +190,7 @@ final class ReplayAPI
             return;
         }
         self::getLogger()->info("Stopped recording replay $replayId; saving data");
-        $recorder->end($replayId, self::$saveCallbacks[$replayId] ?? static function (): void {});
+        $recorder->end(self::$saveCallbacks[$replayId] ?? static function (): void {});
         unset(self::$recorders[$replayId]);
     }
 
