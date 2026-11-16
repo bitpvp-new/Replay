@@ -7,15 +7,17 @@ namespace bitpvp\replay\log;
 use bitpvp\replay\replayer\ReplayPlayer;
 use bitpvp\replay\utils\BinaryStream;
 
-abstract class EventLog {
-
+abstract class EventLog
+{
     protected const int ID = EventLogIds::NONE;
 
-    public static function id(): int {
+    public static function id(): int
+    {
         return static::ID;
     }
 
-    public static function getTickOffset(): int {
+    public static function getTickOffset(): int
+    {
         return 0;
     }
 

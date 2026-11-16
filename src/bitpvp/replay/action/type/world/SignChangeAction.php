@@ -14,21 +14,23 @@ use pocketmine\block\utils\SignText;
 use pocketmine\color\Color;
 use pocketmine\math\Vector3;
 
-class SignChangeAction extends WorldAction {
-
+class SignChangeAction extends WorldAction
+{
     protected const int ID = ActionIds::SIGN_CHANGE;
 
     private Vector3 $position;
     private SignText $text;
 
-    public static function create(BaseSign $sign): self {
+    public static function create(BaseSign $sign): self
+    {
         $action = new self();
         $action->position = $sign->getPosition();
         $action->text = $sign->getText();
         return $action;
     }
 
-    public function serialize(BinaryStream $stream): void {
+    public function serialize(BinaryStream $stream): void
+    {
         $stream->putVector3($this->position);
         $stream->putString(implode("\n", $this->text->getLines()));
         $stream->putBool($this->text->isGlowing());
@@ -36,7 +38,8 @@ class SignChangeAction extends WorldAction {
         $stream->putInt($color > 0x7fffffff ? $color - 0x100000000 : $color);
     }
 
-    public function deserialize(BinaryStream $stream): void {
+    public function deserialize(BinaryStream $stream): void
+    {
         $this->position = $stream->getVector3();
         $lines = $stream->getString();
         $glowing = $stream->getBool();
@@ -44,14 +47,16 @@ class SignChangeAction extends WorldAction {
         $this->text = SignText::fromBlob($lines, $color, $glowing);
     }
 
-    public function handle(ReplayPlayer $replay): void {
+    public function handle(ReplayPlayer $replay): void
+    {
         $block = $replay->getWorld()->getBlock($this->position);
         if ($block instanceof BaseSign) {
             $replay->getWorld()->setBlock($this->position, $block->setText($this->text));
         }
     }
 
-    public function handleReversed(ReplayPlayer $replay): ?Action {
+    public function handleReversed(ReplayPlayer $replay): ?Action
+    {
         $block = $replay->getWorld()->getBlock($this->position);
         return $block instanceof BaseSign ? self::create($block) : parent::handleReversed($replay);
     }

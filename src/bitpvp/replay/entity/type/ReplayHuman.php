@@ -14,7 +14,8 @@ use pocketmine\entity\effect\EffectInstance;
 use pocketmine\math\Vector3;
 use pocketmine\nbt\tag\CompoundTag;
 
-class ReplayHuman extends Human implements ReplayEntity {
+class ReplayHuman extends Human implements ReplayEntity
+{
     use ReplayEntityTrait;
 
     public function __construct(
@@ -29,27 +30,31 @@ class ReplayHuman extends Human implements ReplayEntity {
         parent::__construct($location, $skin, $nbt);
         $this->setCanSaveWithChunk(false);
         $manager = $this->effectManager = new ReplayEffectManager($this);
-        $manager->getEffectAddHooks()->add(function(EffectInstance $effect, bool $replacesOldEffect): void {
+        $manager->getEffectAddHooks()->add(function (EffectInstance $effect, bool $replacesOldEffect): void {
             $this->networkPropertiesDirty = true;
         });
-        $manager->getEffectRemoveHooks()->add(function(EffectInstance $effect): void {
+        $manager->getEffectRemoveHooks()->add(function (EffectInstance $effect): void {
             $this->networkPropertiesDirty = true;
         });
     }
 
-    public function isPlayer(): bool {
+    public function isPlayer(): bool
+    {
         return $this->isPlayer;
     }
 
-    protected function getInitialSizeInfo(): EntitySizeInfo {
+    protected function getInitialSizeInfo(): EntitySizeInfo
+    {
         return $this->sizeInfo;
     }
 
-    public function getOffsetPosition(Vector3 $vector3): Vector3 {
+    public function getOffsetPosition(Vector3 $vector3): Vector3
+    {
         return $this->offsetPosition->addVector($vector3);
     }
 
-    public function getCustomNetworkTypeId(): string {
+    public function getCustomNetworkTypeId(): string
+    {
         return self::getNetworkTypeId();
     }
 }

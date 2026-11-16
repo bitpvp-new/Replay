@@ -6,8 +6,8 @@ namespace bitpvp\replay\replayer\event;
 
 use bitpvp\replay\replayer\ReplayPlayer;
 
-class ReplayRestartEvent extends ReplayEvent {
-
+class ReplayRestartEvent extends ReplayEvent
+{
     public function __construct(
         ReplayPlayer $replay,
         private bool $fromBeginning = true
@@ -15,7 +15,8 @@ class ReplayRestartEvent extends ReplayEvent {
         parent::__construct($replay);
     }
 
-    public function isFromBeginning(): bool {
+    public function isFromBeginning(): bool
+    {
         return $this->fromBeginning;
     }
 }

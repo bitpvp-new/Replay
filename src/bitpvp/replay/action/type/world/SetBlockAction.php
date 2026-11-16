@@ -15,15 +15,16 @@ use pocketmine\math\Vector3;
 use pocketmine\nbt\tag\CompoundTag;
 use pocketmine\world\World;
 
-class SetBlockAction extends WorldAction {
-
+class SetBlockAction extends WorldAction
+{
     protected const int ID = ActionIds::BLOCK_SET;
 
     private Block $block;
     private Vector3 $position;
     private ?CompoundTag $tile = null;
 
-    public static function create(Block $block): self {
+    public static function create(Block $block): self
+    {
         $action = new self();
         $action->block = clone $block;
         $action->position = $pos = $block->getPosition();
@@ -31,7 +32,8 @@ class SetBlockAction extends WorldAction {
         return $action;
     }
 
-    public static function createAt(Block $block, World $world, int $x, int $y, int $z, bool $captureTile = false): self {
+    public static function createAt(Block $block, World $world, int $x, int $y, int $z, bool $captureTile = false): self
+    {
         $action = new self();
         $action->block = clone $block;
         $action->position = new Vector3($x, $y, $z);
@@ -39,7 +41,8 @@ class SetBlockAction extends WorldAction {
         return $action;
     }
 
-    public function serialize(BinaryStream $stream): void {
+    public function serialize(BinaryStream $stream): void
+    {
         $stream->putBlock($this->block);
         $stream->putVector3($this->position);
         $stream->putBool($this->tile !== null);
@@ -48,7 +51,8 @@ class SetBlockAction extends WorldAction {
         }
     }
 
-    public function deserialize(BinaryStream $stream): void {
+    public function deserialize(BinaryStream $stream): void
+    {
         $this->block = $stream->getBlock();
         $this->position = $stream->getVector3();
         if ($stream->getBool()) {
@@ -56,7 +60,8 @@ class SetBlockAction extends WorldAction {
         }
     }
 
-    public function handle(ReplayPlayer $replay): void {
+    public function handle(ReplayPlayer $replay): void
+    {
         $world = $replay->getWorld();
         $tile = $world->getTile($this->position);
         if ($tile !== null) {
@@ -71,7 +76,8 @@ class SetBlockAction extends WorldAction {
         }
     }
 
-    public function handleReversed(ReplayPlayer $replay): ?Action {
+    public function handleReversed(ReplayPlayer $replay): ?Action
+    {
         return self::create($replay->getWorld()->getBlock($this->position));
     }
 }

@@ -10,14 +10,16 @@ use pocketmine\math\Vector3;
 use pocketmine\world\ChunkListener;
 use pocketmine\world\ChunkListenerNoOpTrait;
 
-class RecordChunkListener implements ChunkListener {
+class RecordChunkListener implements ChunkListener
+{
     use ChunkListenerNoOpTrait;
 
     public function __construct(
         private Recorder $recorder
     ) {}
 
-    public function onBlockChanged(Vector3 $block): void {
+    public function onBlockChanged(Vector3 $block): void
+    {
         $this->recorder->addAction(SetBlockAction::create($this->recorder->getWorld()->getBlock($block)));
     }
 }

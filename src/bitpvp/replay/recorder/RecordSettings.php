@@ -7,8 +7,8 @@ namespace bitpvp\replay\recorder;
 use bitpvp\replay\storage\ReplayStorage;
 use pocketmine\plugin\Plugin;
 
-final class RecordSettings {
-
+final class RecordSettings
+{
     public function __construct(
         private readonly Plugin $plugin,
         private readonly string $savePath = "",
@@ -25,27 +25,33 @@ final class RecordSettings {
         }
     }
 
-    public function getPlugin(): Plugin {
+    public function getPlugin(): Plugin
+    {
         return $this->plugin;
     }
 
-    public function getSavePath(): string {
+    public function getSavePath(): string
+    {
         return rtrim($this->savePath, '/\\');
     }
 
-    public function shouldRecordWorldSnapshot(): bool {
+    public function shouldRecordWorldSnapshot(): bool
+    {
         return $this->recordWorldSnapshot;
     }
 
-    public function getRecordInterval(): int {
+    public function getRecordInterval(): int
+    {
         return $this->recordInterval;
     }
 
-    public function getStorage(): ?ReplayStorage {
+    public function getStorage(): ?ReplayStorage
+    {
         return $this->storage;
     }
 
-    public function getSerializationBatchSize(): int {
+    public function getSerializationBatchSize(): int
+    {
         return $this->serializationBatchSize;
     }
 }

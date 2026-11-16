@@ -72,8 +72,8 @@ use pocketmine\network\mcpe\protocol\types\ActorEvent;
 use pocketmine\player\Player;
 use pocketmine\world\World;
 
-class RecordListener implements Listener {
-
+class RecordListener implements Listener
+{
     private RecordPacketHandler $packetHandler;
 
     public function __construct(
@@ -83,7 +83,8 @@ class RecordListener implements Listener {
     }
 
     /** @priority MONITOR */
-    public function onChat(PlayerChatEvent $event): void {
+    public function onChat(PlayerChatEvent $event): void
+    {
         if (!$this->recorder->canRecordEntity($player = $event->getPlayer())) {
             return;
         }
@@ -91,11 +92,12 @@ class RecordListener implements Listener {
         if ($text instanceof Translatable) {
             $text = $player->getLanguage()->translate($text);
         }
-        $this->recorder->addAction(PlayerChatAction::create($player->getId(), (string)$text));
+        $this->recorder->addAction(PlayerChatAction::create($player->getId(), (string) $text));
     }
 
     /** @priority MONITOR */
-    public function onMove(PlayerMoveEvent $event): void {
+    public function onMove(PlayerMoveEvent $event): void
+    {
         if (!$this->recorder->canRecordEntity($player = $event->getPlayer())) {
             return;
         }
@@ -103,7 +105,8 @@ class RecordListener implements Listener {
     }
 
     /** @priority MONITOR */
-    public function onSkinChange(PlayerChangeSkinEvent $event): void {
+    public function onSkinChange(PlayerChangeSkinEvent $event): void
+    {
         if (!$this->recorder->canRecordEntity($player = $event->getPlayer())) {
             return;
         }
@@ -111,7 +114,8 @@ class RecordListener implements Listener {
     }
 
     /** @priority MONITOR */
-    public function onItemHeld(PlayerItemHeldEvent $event): void {
+    public function onItemHeld(PlayerItemHeldEvent $event): void
+    {
         if ($event->isCancelled() || !$this->recorder->canRecordEntity($player = $event->getPlayer()) || !$player->isAlive()) {
             return;
         }
@@ -120,7 +124,8 @@ class RecordListener implements Listener {
     }
 
     /** @priority MONITOR */
-    public function onPlayerRespawn(PlayerRespawnEvent $event): void {
+    public function onPlayerRespawn(PlayerRespawnEvent $event): void
+    {
         if (!$this->recorder->canRecordEntity($player = $event->getPlayer())) {
             return;
         }
@@ -128,7 +133,8 @@ class RecordListener implements Listener {
     }
 
     /** @priority MONITOR */
-    public function onItemSpawn(ItemSpawnEvent $event): void {
+    public function onItemSpawn(ItemSpawnEvent $event): void
+    {
         if (!$this->recorder->canRecordEntity($entity = $event->getEntity())) {
             return;
         }
@@ -136,7 +142,8 @@ class RecordListener implements Listener {
     }
 
     /** @priority MONITOR */
-    public function onEntitySpawn(EntitySpawnEvent $event): void {
+    public function onEntitySpawn(EntitySpawnEvent $event): void
+    {
         $entity = $event->getEntity();
         if ($entity instanceof ItemEntity || !$this->recorder->canRecordEntity($entity)) {
             return;
@@ -145,7 +152,8 @@ class RecordListener implements Listener {
     }
 
     /** @priority MONITOR */
-    public function onEntityTeleport(EntityTeleportEvent $event): void {
+    public function onEntityTeleport(EntityTeleportEvent $event): void
+    {
         $from = $event->getFrom();
         $to   = $event->getTo();
         $entity = $event->getEntity();
@@ -173,7 +181,8 @@ class RecordListener implements Listener {
     }
 
     /** @priority MONITOR */
-    public function onEntityDamage(EntityDamageEvent $event): void {
+    public function onEntityDamage(EntityDamageEvent $event): void
+    {
         if (!$this->recorder->canRecordEntity($entity = $event->getEntity()) || !$entity->isAlive()) {
             return;
         }
@@ -181,7 +190,8 @@ class RecordListener implements Listener {
     }
 
     /** @priority MONITOR */
-    public function onEffectAdd(EntityEffectAddEvent $event): void {
+    public function onEffectAdd(EntityEffectAddEvent $event): void
+    {
         $entity = $event->getEntity();
         if ($event->isCancelled() || !$entity instanceof Living || !$this->recorder->canRecordEntity($entity)) {
             return;
@@ -193,7 +203,8 @@ class RecordListener implements Listener {
     }
 
     /** @priority MONITOR */
-    public function onEffectRemove(EntityEffectRemoveEvent $event): void {
+    public function onEffectRemove(EntityEffectRemoveEvent $event): void
+    {
         $entity = $event->getEntity();
         if ($event->isCancelled() || !$entity instanceof Living || !$this->recorder->canRecordEntity($entity)) {
             return;
@@ -205,7 +216,8 @@ class RecordListener implements Listener {
     }
 
     /** @priority MONITOR */
-    public function onEntityDeath(EntityDeathEvent $event): void {
+    public function onEntityDeath(EntityDeathEvent $event): void
+    {
         if (!$this->recorder->canRecordEntity($entity = $event->getEntity())) {
             return;
         }
@@ -220,7 +232,8 @@ class RecordListener implements Listener {
     }
 
     /** @priority MONITOR */
-    public function onDespawn(EntityDespawnEvent $event): void {
+    public function onDespawn(EntityDespawnEvent $event): void
+    {
         if (!$this->recorder->canRecordEntity($entity = $event->getEntity())) {
             return;
         }
@@ -228,7 +241,8 @@ class RecordListener implements Listener {
     }
 
     /** @priority MONITOR */
-    public function onPacketReceive(DataPacketReceiveEvent $event): void {
+    public function onPacketReceive(DataPacketReceiveEvent $event): void
+    {
         $player = $event->getOrigin()->getPlayer();
 
         if ($player === null || $player->getWorld() !== $this->recorder->getWorld()) {
@@ -239,7 +253,8 @@ class RecordListener implements Listener {
     }
 
     /** @priority MONITOR */
-    public function onPacketSend(DataPacketSendEvent $event): void {
+    public function onPacketSend(DataPacketSendEvent $event): void
+    {
         foreach ($event->getTargets() as $target) {
             $player = $target->getPlayer();
             if ($player === null || $player->getWorld() !== $this->recorder->getWorld()) {
@@ -253,7 +268,8 @@ class RecordListener implements Listener {
     }
 
     /** @priority MONITOR */
-    public function onSignChange(SignChangeEvent $event): void {
+    public function onSignChange(SignChangeEvent $event): void
+    {
         if ($event->getBlock()->getPosition()->getWorld() !== $this->recorder->getWorld()) {
             return;
         }
@@ -264,7 +280,8 @@ class RecordListener implements Listener {
     }
 
     /** @priority MONITOR */
-    public function onExplode(EntityExplodeEvent $event): void {
+    public function onExplode(EntityExplodeEvent $event): void
+    {
         if ($event->isCancelled()) {
             return;
         }
@@ -281,7 +298,8 @@ class RecordListener implements Listener {
     }
 
     /** @priority MONITOR */
-    public function onBlockExplode(BlockExplodeEvent $event): void {
+    public function onBlockExplode(BlockExplodeEvent $event): void
+    {
         if ($event->isCancelled()) {
             return;
         }
@@ -294,7 +312,8 @@ class RecordListener implements Listener {
     }
 
     /** @priority MONITOR */
-    public function onBlockBreak(BlockBreakEvent $event): void {
+    public function onBlockBreak(BlockBreakEvent $event): void
+    {
         if ($event->isCancelled()) {
             return;
         }
@@ -302,7 +321,8 @@ class RecordListener implements Listener {
     }
 
     /** @priority MONITOR */
-    public function onBlockPlace(BlockPlaceEvent $event): void {
+    public function onBlockPlace(BlockPlaceEvent $event): void
+    {
         if ($event->isCancelled()) {
             return;
         }
@@ -313,7 +333,8 @@ class RecordListener implements Listener {
     }
 
     /** @priority MONITOR */
-    public function onBlockBurn(BlockBurnEvent $event): void {
+    public function onBlockBurn(BlockBurnEvent $event): void
+    {
         if ($event->isCancelled()) {
             return;
         }
@@ -321,7 +342,8 @@ class RecordListener implements Listener {
     }
 
     /** @priority MONITOR */
-    public function onBlockGrow(BlockGrowEvent $event): void {
+    public function onBlockGrow(BlockGrowEvent $event): void
+    {
         if ($event->isCancelled()) {
             return;
         }
@@ -329,7 +351,8 @@ class RecordListener implements Listener {
     }
 
     /** @priority MONITOR */
-    public function onBlockSpread(BlockSpreadEvent $event): void {
+    public function onBlockSpread(BlockSpreadEvent $event): void
+    {
         if ($event->isCancelled()) {
             return;
         }
@@ -337,7 +360,8 @@ class RecordListener implements Listener {
     }
 
     /** @priority MONITOR */
-    public function onBlockForm(BlockFormEvent $event): void {
+    public function onBlockForm(BlockFormEvent $event): void
+    {
         if ($event->isCancelled()) {
             return;
         }
@@ -345,7 +369,8 @@ class RecordListener implements Listener {
     }
 
     /** @priority MONITOR */
-    public function onBlockMelt(BlockMeltEvent $event): void {
+    public function onBlockMelt(BlockMeltEvent $event): void
+    {
         if ($event->isCancelled()) {
             return;
         }
@@ -353,7 +378,8 @@ class RecordListener implements Listener {
     }
 
     /** @priority MONITOR */
-    public function onBlockDeath(BlockDeathEvent $event): void {
+    public function onBlockDeath(BlockDeathEvent $event): void
+    {
         if ($event->isCancelled()) {
             return;
         }
@@ -361,14 +387,16 @@ class RecordListener implements Listener {
     }
 
     /** @priority MONITOR */
-    public function onLeavesDecay(LeavesDecayEvent $event): void {
+    public function onLeavesDecay(LeavesDecayEvent $event): void
+    {
         if ($event->isCancelled()) {
             return;
         }
         $this->recordBlockState($event->getBlock(), VanillaBlocks::AIR());
     }
 
-    private function recordBlockState(Block $oldBlock, Block $newBlock): void {
+    private function recordBlockState(Block $oldBlock, Block $newBlock): void
+    {
         $position = $oldBlock->getPosition();
         if ($position->getWorld() !== $this->recorder->getWorld()) {
             return;
@@ -382,7 +410,8 @@ class RecordListener implements Listener {
     }
 
     /** @priority MONITOR */
-    public function onChunkLoad(ChunkLoadEvent $event): void {
+    public function onChunkLoad(ChunkLoadEvent $event): void
+    {
         if ($event->getWorld() !== $this->recorder->getWorld()) {
             return;
         }
@@ -393,7 +422,8 @@ class RecordListener implements Listener {
         );
     }
 
-    public function onChunkUnload(ChunkUnloadEvent $event): void {
+    public function onChunkUnload(ChunkUnloadEvent $event): void
+    {
         if ($event->getWorld() !== $this->recorder->getWorld()) {
             return;
         }
@@ -401,9 +431,10 @@ class RecordListener implements Listener {
         $this->recorder->removeChunk($event->getWorld(), $event->getChunk(), World::chunkHash($event->getChunkX(), $event->getChunkZ()));
     }
 
-    public function onWorldUnload(WorldUnloadEvent $event): void {
-        if($event->getWorld() === $this->recorder->getWorld()) {
-            throw IlegalHandlingException::create("Trying to unload a world that is being recorded (world=". $this->recorder->getWorld()->getFolderName().")");
+    public function onWorldUnload(WorldUnloadEvent $event): void
+    {
+        if ($event->getWorld() === $this->recorder->getWorld()) {
+            throw IlegalHandlingException::create("Trying to unload a world that is being recorded (world=" . $this->recorder->getWorld()->getFolderName() . ")");
         }
     }
 }

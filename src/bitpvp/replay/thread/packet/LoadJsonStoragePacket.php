@@ -7,15 +7,16 @@ namespace bitpvp\replay\thread\packet;
 use bitpvp\replay\thread\result\LoadJsonStorageResultPacket;
 use bitpvp\replay\thread\ThreadPacket;
 
-final class LoadJsonStoragePacket extends ThreadPacket {
-
+final class LoadJsonStoragePacket extends ThreadPacket
+{
     public function __construct(
         private readonly string $replayId,
         private readonly string $jsonPath,
         private readonly string $replayPath,
     ) {}
 
-    public function execute(): ?ThreadPacket {
+    public function execute(): ?ThreadPacket
+    {
         if (!file_exists($this->jsonPath)) {
             return new LoadJsonStorageResultPacket($this->replayId, false, "", null, "Metadata file not found: {$this->jsonPath}");
         }

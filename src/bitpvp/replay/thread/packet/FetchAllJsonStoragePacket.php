@@ -7,14 +7,15 @@ namespace bitpvp\replay\thread\packet;
 use bitpvp\replay\thread\result\FetchAllJsonStorageResultPacket;
 use bitpvp\replay\thread\ThreadPacket;
 
-final class FetchAllJsonStoragePacket extends ThreadPacket {
-
+final class FetchAllJsonStoragePacket extends ThreadPacket
+{
     public function __construct(
         private readonly string $token,
         private readonly string $directory,
     ) {}
 
-    public function execute(): ?ThreadPacket {
+    public function execute(): ?ThreadPacket
+    {
         if (!is_dir($this->directory)) {
             return new FetchAllJsonStorageResultPacket($this->token, true, "[]", null);
         }

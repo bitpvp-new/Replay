@@ -13,8 +13,8 @@ use pocketmine\world\format\Chunk;
 use pocketmine\world\format\io\FastChunkSerializer;
 use pocketmine\world\World;
 
-class WorldData {
-
+class WorldData
+{
     /** @var array<int, Chunk> */
     private array $chunks = [];
 
@@ -23,14 +23,16 @@ class WorldData {
     private Vector3 $spawn;
     private int $initialTime;
 
-    public static function create(World $world): self {
+    public static function create(World $world): self
+    {
         $worldData = new self();
         $worldData->spawn = $world->getSafeSpawn();
         $worldData->initialTime = $world->getTimeOfDay();
         return $worldData;
     }
 
-    public static function fromData(array $chunks, array $tiles, Vector3 $spawn, int $initialTime): self {
+    public static function fromData(array $chunks, array $tiles, Vector3 $spawn, int $initialTime): self
+    {
         $worldData = new self();
         $worldData->chunks = $chunks;
         $worldData->tiles = $tiles;
@@ -39,15 +41,17 @@ class WorldData {
         return $worldData;
     }
 
-    public function addChunk(Chunk $chunk, int $chunkHash): void {
-        if(isset($this->chunks[$chunkHash])) {
+    public function addChunk(Chunk $chunk, int $chunkHash): void
+    {
+        if (isset($this->chunks[$chunkHash])) {
             throw IlegalHandlingException::create("Cannot override chunk #$chunkHash fromWorldData");
         }
         $this->chunks[$chunkHash] = clone $chunk;
     }
 
-    public function removeChunk(Chunk $chunk, int $chunkHash): void {
-        if(!isset($this->chunks[$chunkHash])) {
+    public function removeChunk(Chunk $chunk, int $chunkHash): void
+    {
+        if (!isset($this->chunks[$chunkHash])) {
             throw IlegalHandlingException::create("Cannot remove chunk #$chunkHash from WorldData, chunk does not exist");
         }
         unset($this->chunks[$chunkHash]);
@@ -56,22 +60,26 @@ class WorldData {
     /**
      * @return array<int, Chunk>
      */
-    public function getChunks(): array {
+    public function getChunks(): array
+    {
         return $this->chunks;
     }
 
     /**
      * @return CompoundTag[]
      */
-    public function getTiles(): array {
+    public function getTiles(): array
+    {
         return $this->tiles;
     }
 
-    public function getSpawn(): Vector3 {
+    public function getSpawn(): Vector3
+    {
         return $this->spawn;
     }
 
-    public function getInitialTime(): int {
+    public function getInitialTime(): int
+    {
         return $this->initialTime;
     }
 
@@ -80,14 +88,16 @@ class WorldData {
      * @return void
      * @deprecated
      */
-    public function encode(BinaryStream $stream): void {
+    public function encode(BinaryStream $stream): void
+    {
         foreach ($this->encodeSteps($stream) as $_) {
 
         }
     }
 
     /** @return Generator<mixed, null, mixed, void> */
-    public function encodeSteps(BinaryStream $stream): Generator {
+    public function encodeSteps(BinaryStream $stream): Generator
+    {
         $stream->putInt(count($this->chunks));
         foreach ($this->chunks as $hash => $chunk) {
             $stream->putLong($hash);
@@ -111,7 +121,8 @@ class WorldData {
      * @return self
      * @deprecated
      */
-    public static function decode(BinaryStream $stream): self {
+    public static function decode(BinaryStream $stream): self
+    {
         $steps = self::decodeSteps($stream);
         foreach ($steps as $_) {
 
@@ -120,7 +131,8 @@ class WorldData {
     }
 
     /** @return Generator<mixed, null, mixed, self> */
-    public static function decodeSteps(BinaryStream $stream): Generator {
+    public static function decodeSteps(BinaryStream $stream): Generator
+    {
         $chunks = [];
         $tiles = [];
         $chunkCount = $stream->getInt();

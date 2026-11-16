@@ -6,8 +6,8 @@ namespace bitpvp\replay\replayer;
 
 use pocketmine\plugin\Plugin;
 
-final class ReplaySettings {
-
+final class ReplaySettings
+{
     public function __construct(
         private readonly Plugin $plugin,
         private readonly float $speed = 1.0,
@@ -22,19 +22,23 @@ final class ReplaySettings {
         }
     }
 
-    public function getPlugin(): Plugin {
+    public function getPlugin(): Plugin
+    {
         return $this->plugin;
     }
 
-    public function getSpeed(): float {
+    public function getSpeed(): float
+    {
         return $this->speed;
     }
 
-    public function isLoop(): bool {
+    public function isLoop(): bool
+    {
         return $this->loop;
     }
 
-    public function getSerializationBatchSize(): int {
+    public function getSerializationBatchSize(): int
+    {
         return $this->serializationBatchSize;
     }
 }

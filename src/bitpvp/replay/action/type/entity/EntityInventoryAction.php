@@ -14,8 +14,8 @@ use pocketmine\entity\Living;
 use pocketmine\inventory\Inventory;
 use pocketmine\item\Item;
 
-final class EntityInventoryAction extends EntityAction {
-
+final class EntityInventoryAction extends EntityAction
+{
     protected const int ID = ActionIds::ENTITY_INVENTORY;
 
     /** @var array<int, Item> */
@@ -25,7 +25,8 @@ final class EntityInventoryAction extends EntityAction {
     private ?Item $offHand = null;
     private ?int $heldSlot = null;
 
-    public static function create(Living $entity, ?Inventory $changedInventory = null, ?int $changedSlot = null, ?int $heldSlot = null): self {
+    public static function create(Living $entity, ?Inventory $changedInventory = null, ?int $changedSlot = null, ?int $heldSlot = null): self
+    {
         $action = new self();
         $action->entityId = $entity->getId();
         $action->armor = $entity->getArmorInventory()->getContents();
@@ -45,7 +46,8 @@ final class EntityInventoryAction extends EntityAction {
         return $action;
     }
 
-    public function serialize(BinaryStream $stream): void {
+    public function serialize(BinaryStream $stream): void
+    {
         parent::serialize($stream);
         $stream->putContents($this->items);
         $stream->putContents($this->armor);
@@ -59,7 +61,8 @@ final class EntityInventoryAction extends EntityAction {
         }
     }
 
-    public function deserialize(BinaryStream $stream): void {
+    public function deserialize(BinaryStream $stream): void
+    {
         parent::deserialize($stream);
         $this->items = $stream->getContents();
         $this->armor = $stream->getContents();
@@ -67,7 +70,8 @@ final class EntityInventoryAction extends EntityAction {
         $this->heldSlot = $stream->getBool() ? $stream->getInt() : null;
     }
 
-    public function handle(ReplayPlayer $replay): void {
+    public function handle(ReplayPlayer $replay): void
+    {
         $entity = $replay->getEntity($this->entityId);
         if ($entity instanceof Living) {
             $entity->getArmorInventory()->setContents($this->armor);
@@ -83,7 +87,8 @@ final class EntityInventoryAction extends EntityAction {
         }
     }
 
-    public function handleReversed(ReplayPlayer $replay): ?Action {
+    public function handleReversed(ReplayPlayer $replay): ?Action
+    {
         $entity = $replay->getEntity($this->entityId);
         return $entity instanceof Living ? self::create($entity) : null;
     }

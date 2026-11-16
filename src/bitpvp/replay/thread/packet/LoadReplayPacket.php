@@ -7,14 +7,15 @@ namespace bitpvp\replay\thread\packet;
 use bitpvp\replay\thread\result\LoadReplayResultPacket;
 use bitpvp\replay\thread\ThreadPacket;
 
-final class LoadReplayPacket extends ThreadPacket {
-
+final class LoadReplayPacket extends ThreadPacket
+{
     public function __construct(
         private readonly string $replayId,
         private readonly string $filePath,
     ) {}
 
-    public function execute(): ?ThreadPacket {
+    public function execute(): ?ThreadPacket
+    {
         if (!file_exists($this->filePath)) {
             return new LoadReplayResultPacket($this->replayId, false, null, "File not found: {$this->filePath}");
         }

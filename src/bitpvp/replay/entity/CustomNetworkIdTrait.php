@@ -18,8 +18,8 @@ use pocketmine\network\mcpe\protocol\types\entity\PropertySyncData;
 use pocketmine\network\mcpe\protocol\types\entity\Attribute as NetworkAttribute;
 use pocketmine\player\Player;
 
-trait CustomNetworkIdTrait {
-
+trait CustomNetworkIdTrait
+{
     public function __construct(
         private string $networkTypeId,
         private int $actualId,
@@ -32,44 +32,52 @@ trait CustomNetworkIdTrait {
         $this->setCanSaveWithChunk(false);
         if ($this instanceof Living) {
             $manager = $this->effectManager = new ReplayEffectManager($this);
-            $manager->getEffectAddHooks()->add(function(EffectInstance $effect, bool $replacesOldEffect): void {
+            $manager->getEffectAddHooks()->add(function (EffectInstance $effect, bool $replacesOldEffect): void {
                 $this->networkPropertiesDirty = true;
             });
-            $manager->getEffectRemoveHooks()->add(function(EffectInstance $effect): void {
+            $manager->getEffectRemoveHooks()->add(function (EffectInstance $effect): void {
                 $this->networkPropertiesDirty = true;
             });
         }
     }
 
-    public static function getNetworkTypeId(): string {
+    public static function getNetworkTypeId(): string
+    {
         return EntityIds::XP_ORB;
     }
 
-    protected function getInitialGravity(): float {
+    protected function getInitialGravity(): float
+    {
         return 0.08;
     }
 
-    protected function getInitialDragMultiplier(): float {
+    protected function getInitialDragMultiplier(): float
+    {
         return 0.02;
     }
 
-    protected function getInitialSizeInfo(): EntitySizeInfo {
+    protected function getInitialSizeInfo(): EntitySizeInfo
+    {
         return $this->sizeInfo;
     }
 
-    public function getCustomNetworkTypeId(): string {
+    public function getCustomNetworkTypeId(): string
+    {
         return $this->networkTypeId;
     }
 
-    public function getOffsetPosition(Vector3 $vector3): Vector3 {
+    public function getOffsetPosition(Vector3 $vector3): Vector3
+    {
         return $this->offsetPosition->addVector($vector3);
     }
 
-    protected function sendSpawnPacket(Player $player): void {
+    protected function sendSpawnPacket(Player $player): void
+    {
         $this->sendInternalSpawnPacket($player);
     }
 
-    private function sendInternalSpawnPacket(Player $player): void {
+    private function sendInternalSpawnPacket(Player $player): void
+    {
         $player->getNetworkSession()->sendDataPacket(AddActorPacket::create(
             $this->getId(),
             $this->getId(),

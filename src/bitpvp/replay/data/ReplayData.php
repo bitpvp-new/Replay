@@ -18,8 +18,8 @@ use pocketmine\promise\PromiseResolver;
 use pocketmine\timings\TimingsHandler;
 use Throwable;
 
-class ReplayData {
-
+class ReplayData
+{
     private function __construct() {}
 
     private ReplayInformation $information;
@@ -30,7 +30,8 @@ class ReplayData {
     /** @var array<string, WorldData> */
     private array $worldDatum = [];
 
-    public static function create(ReplayInformation $information, array $actions, array $eventLogs, array $worldDatum): self {
+    public static function create(ReplayInformation $information, array $actions, array $eventLogs, array $worldDatum): self
+    {
         $data = new self();
         $data->information = $information;
         $data->actions = $actions;
@@ -39,56 +40,65 @@ class ReplayData {
         return $data;
     }
 
-    public function getInformation(): ReplayInformation {
+    public function getInformation(): ReplayInformation
+    {
         return $this->information;
     }
 
     /**
      * @return array<int, Action[]>
      */
-    public function getActions(): array {
+    public function getActions(): array
+    {
         return $this->actions;
     }
 
     /**
      * @return Action[]
      */
-    public function getActionsByTick(int $tick): array {
+    public function getActionsByTick(int $tick): array
+    {
         return $this->actions[$tick] ?? [];
     }
 
     /**
      * @return array<int, EventLog[]>
      */
-    public function getEventLogs(): array {
+    public function getEventLogs(): array
+    {
         return $this->eventLogs;
     }
 
     /** @return EventLog[] */
-    public function getEventLogsByTick(int $tick): array {
+    public function getEventLogsByTick(int $tick): array
+    {
         return $this->eventLogs[$tick] ?? [];
     }
 
     /**
      * @return array<string, WorldData>
      */
-    public function getWorldDatum(): array {
+    public function getWorldDatum(): array
+    {
         return $this->worldDatum;
     }
 
-    public function getWorldData(string $worldName): ?WorldData {
+    public function getWorldData(string $worldName): ?WorldData
+    {
         return $this->worldDatum[$worldName] ?? null;
     }
 
     /**
      * @return Promise<string>
      */
-    public function encodeAsync(Plugin $plugin, int $itemsPerTick = 500): Promise {
+    public function encodeAsync(Plugin $plugin, int $itemsPerTick = 500): Promise
+    {
         return self::runAsync($plugin, $this->encodeSteps(), $itemsPerTick, ReplayTimings::dataEncode());
     }
 
     /** @return Generator<mixed, null, mixed, string> */
-    private function encodeSteps(): Generator {
+    private function encodeSteps(): Generator
+    {
         $stream = BinaryStream::encoder();
 
         $stream->putInt(count($this->actions));
@@ -129,12 +139,14 @@ class ReplayData {
     /**
      * @return Promise<ReplayData>
      */
-    public static function decodeAsync(Plugin $plugin, ReplayInformation $information, string $buffer, int $itemsPerTick = 500): Promise {
+    public static function decodeAsync(Plugin $plugin, ReplayInformation $information, string $buffer, int $itemsPerTick = 500): Promise
+    {
         return self::runAsync($plugin, self::decodeSteps($information, $buffer), $itemsPerTick, ReplayTimings::dataDecode());
     }
 
     /** @return Generator<mixed, null, mixed, self> */
-    private static function decodeSteps(ReplayInformation $information, string $buffer): Generator {
+    private static function decodeSteps(ReplayInformation $information, string $buffer): Generator
+    {
         $stream = BinaryStream::decoder($buffer, 0);
         $actionHandler = ActionHandler::getInstance();
 
@@ -187,7 +199,8 @@ class ReplayData {
      * @param Generator<mixed, null, mixed, mixed> $steps
      * @return Promise<mixed>
      */
-    private static function runAsync(Plugin $plugin, Generator $steps, int $itemsPerTick, TimingsHandler $timings): Promise {
+    private static function runAsync(Plugin $plugin, Generator $steps, int $itemsPerTick, TimingsHandler $timings): Promise
+    {
         if ($itemsPerTick < 1) {
             throw new \InvalidArgumentException("Serialization batch size must be at least one");
         }
@@ -198,7 +211,7 @@ class ReplayData {
             $itemsPerTick,
             $timings,
             $resolver,
-            static function(Throwable $error) use ($plugin): void {
+            static function (Throwable $error) use ($plugin): void {
                 $message = "Replay data serialization failed: " . $error->getMessage();
                 try {
                     ReplayAPI::getLogger()->error($message);

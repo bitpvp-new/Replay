@@ -12,8 +12,8 @@ use pocketmine\timings\TimingsHandler;
 use Throwable;
 
 /** @internal Runs replay serialization work in bounded batches on the main thread. */
-final class ReplayDataTask extends Task {
-
+final class ReplayDataTask extends Task
+{
     private bool $finished = false;
     private bool $started = false;
     private bool $completed = false;
@@ -33,7 +33,8 @@ final class ReplayDataTask extends Task {
         private \Closure $onError
     ) {}
 
-    public function onRun(): void {
+    public function onRun(): void
+    {
         $result = null;
         $completed = false;
         $error = null;
@@ -76,7 +77,8 @@ final class ReplayDataTask extends Task {
         }
     }
 
-    public function onCancel(): void {
+    public function onCancel(): void
+    {
         if ($this->finished) {
             return;
         }

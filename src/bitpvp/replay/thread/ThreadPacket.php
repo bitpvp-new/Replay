@@ -6,7 +6,7 @@ namespace bitpvp\replay\thread;
 
 use pmmp\thread\ThreadSafe;
 
-abstract class ThreadPacket extends ThreadSafe {
-
+abstract class ThreadPacket extends ThreadSafe
+{
     abstract public function execute(): ?ThreadPacket;
 }

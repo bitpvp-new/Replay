@@ -7,8 +7,8 @@ namespace bitpvp\replay\thread\packet;
 use bitpvp\replay\thread\result\SaveJsonStorageResultPacket;
 use bitpvp\replay\thread\ThreadPacket;
 
-final class SaveJsonStoragePacket extends ThreadPacket {
-
+final class SaveJsonStoragePacket extends ThreadPacket
+{
     public function __construct(
         private readonly string $replayId,
         private readonly string $jsonPath,
@@ -18,10 +18,11 @@ final class SaveJsonStoragePacket extends ThreadPacket {
         private readonly bool $isCompressed = false,
     ) {}
 
-    public function execute(): ?ThreadPacket {
+    public function execute(): ?ThreadPacket
+    {
         $dir = dirname($this->replayPath);
         if (!is_dir($dir)) {
-            mkdir($dir, 0777, true);
+            mkdir($dir, 0o777, true);
         }
 
         $compressed = $this->isCompressed ? $this->buffer : zlib_encode($this->buffer, ZLIB_ENCODING_GZIP, 6);

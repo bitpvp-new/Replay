@@ -33,8 +33,8 @@ use pocketmine\world\Position;
 use pocketmine\world\World;
 use pocketmine\world\WorldCreationOptions;
 
-class ReplayPlayer {
-
+class ReplayPlayer
+{
     private TaskHandler $task;
     private bool $paused = true;
     private int $currentTick = 0;
@@ -64,13 +64,13 @@ class ReplayPlayer {
 
         TaskManager::create()
             ->repeating(1)
-            ->whenCalled(function(): void {
+            ->whenCalled(function (): void {
                 !$this->ended || TaskCancelException::cancel();
                 $this->speedTicks += $this->speed;
                 if (fmod($this->speedTicks, 1) !== 0.0) {
                     return;
                 }
-                $times = (int)$this->speedTicks;
+                $times = (int) $this->speedTicks;
                 for ($i = 0; $i < $times; $i++) {
                     if (!$this->tick()) {
                         break;
@@ -82,17 +82,17 @@ class ReplayPlayer {
         (new ReplayStartEvent($this))->call();
     }
 
-    private function tick(?ReplayPlayDirection $direction = null): bool {
+    private function tick(?ReplayPlayDirection $direction = null): bool
+    {
         if ($this->paused && $direction === null) {
             return false;
         }
 
-        return ReplayTimings::replayTick()->time(function () use ($direction): bool {
-            return $this->processTick($direction);
-        });
+        return ReplayTimings::replayTick()->time(fn(): bool => $this->processTick($direction));
     }
 
-    private function processTick(?ReplayPlayDirection $direction): bool {
+    private function processTick(?ReplayPlayDirection $direction): bool
+    {
         $reversed = ($direction ?? $this->playDirection) === ReplayPlayDirection::BACKWARDS;
 
         if ($reversed) {
@@ -144,13 +144,14 @@ class ReplayPlayer {
         // Display progress using the experience bar
 
         $this->viewer->getXpManager()->setXpAndProgress(
-            (int)floor($this->currentTick / 20),
+            (int) floor($this->currentTick / 20),
             $this->currentTick / $this->duration
         );
         return true;
     }
 
-    public function end(): void {
+    public function end(): void
+    {
         if ($this->ended) {
             return;
         }
@@ -162,7 +163,8 @@ class ReplayPlayer {
         }
     }
 
-    public function skip(ReplayPlayDirection $direction, int $ticks): void {
+    public function skip(ReplayPlayDirection $direction, int $ticks): void
+    {
         if ($ticks < 0) {
             throw new \InvalidArgumentException("Ticks to skip cannot be negative");
         }
@@ -173,11 +175,13 @@ class ReplayPlayer {
                 $ticks,
                 5,
                 fn() => $this->speedTicks = 0
-            ), 1
+            ),
+            1
         );
     }
 
-    public function skipToTick(int $tick): void {
+    public function skipToTick(int $tick): void
+    {
         if ($tick === $this->currentTick) {
             return;
         }
@@ -187,37 +191,44 @@ class ReplayPlayer {
         );
     }
 
-    public function togglePaused(): bool {
+    public function togglePaused(): bool
+    {
         $paused = $this->paused = !$this->paused;
         (new ReplayTogglePauseEvent($this))->call();
         return $paused;
     }
 
-    public function pause(): void {
+    public function pause(): void
+    {
         if (!$this->paused) {
             $this->togglePaused();
         }
     }
 
-    public function unpause(): void {
+    public function unpause(): void
+    {
         if ($this->paused) {
             $this->togglePaused();
         }
     }
 
-    public function togglePause(): bool {
+    public function togglePause(): bool
+    {
         return $this->togglePaused();
     }
 
-    public function isPaused(): bool {
+    public function isPaused(): bool
+    {
         return $this->paused;
     }
 
-    public function getPlayDirection(): ReplayPlayDirection {
+    public function getPlayDirection(): ReplayPlayDirection
+    {
         return $this->playDirection;
     }
 
-    public function setPlayDirection(ReplayPlayDirection $playDirection): void {
+    public function setPlayDirection(ReplayPlayDirection $playDirection): void
+    {
         if ($playDirection === $this->playDirection) {
             return;
         }
@@ -225,11 +236,13 @@ class ReplayPlayer {
         (new ReplayChangeDirectionEvent($this))->call();
     }
 
-    public function getSpeed(): float {
+    public function getSpeed(): float
+    {
         return $this->speed;
     }
 
-    public function setSpeed(float $speed): void {
+    public function setSpeed(float $speed): void
+    {
         if (!is_finite($speed) || $speed <= 0.0) {
             throw new \InvalidArgumentException("Replay speed must be a finite number greater than zero");
         }
@@ -237,28 +250,34 @@ class ReplayPlayer {
         $this->speed = $speed;
     }
 
-    public function getCurrentTick(): int {
+    public function getCurrentTick(): int
+    {
         return $this->currentTick;
     }
 
-    public function getViewer(): Player {
+    public function getViewer(): Player
+    {
         return $this->viewer;
     }
 
-    public function getWorld(): ?World {
+    public function getWorld(): ?World
+    {
         return $this->world;
     }
 
-    public function getSettings(): ReplaySettings {
+    public function getSettings(): ReplaySettings
+    {
         return $this->settings;
     }
 
-    public function getData(): ReplayData {
+    public function getData(): ReplayData
+    {
         return $this->data;
     }
 
     /** @internal */
-    public function spawnEntity(Entity $entity): void {
+    public function spawnEntity(Entity $entity): void
+    {
         if ($entity instanceof ReplayEntity) {
             $this->entities[$entity->getActualId()] = $entity;
         }
@@ -266,7 +285,8 @@ class ReplayPlayer {
     }
 
     /** @internal */
-    public function despawnEntity(int $entityId): void {
+    public function despawnEntity(int $entityId): void
+    {
         if (!isset($this->entities[$entityId])) {
             return;
         }
@@ -276,21 +296,24 @@ class ReplayPlayer {
         unset($this->entities[$entityId]);
     }
 
-    public function getEntity(int $entityId): ?ReplayEntity {
+    public function getEntity(int $entityId): ?ReplayEntity
+    {
         return $this->entities[$entityId] ?? null;
     }
 
     /**
      * @return array<int, ReplayEntity>
      */
-    public function getEntities(): array {
+    public function getEntities(): array
+    {
         return $this->entities;
     }
 
     /**
      * @return array{contents: array<int, Item>, armor: array<int, Item>, offhand: Item, heldSlot: int}|null
      */
-    public function getEntityInventory(int $entityId): ?array {
+    public function getEntityInventory(int $entityId): ?array
+    {
         $entity = $this->entities[$entityId] ?? null;
         if (!$entity instanceof Human) {
             return null;
@@ -304,7 +327,8 @@ class ReplayPlayer {
     }
 
     /** @internal */
-    public function switchWorld(string $worldName): void {
+    public function switchWorld(string $worldName): void
+    {
         if ($this->world !== null) {
             $this->removeCurrentWorld();
         }
@@ -350,7 +374,8 @@ class ReplayPlayer {
         $this->speedTicks = 0;
     }
 
-    private function getReplaySpawn(World $world, WorldData $worldData): Position {
+    private function getReplaySpawn(World $world, WorldData $worldData): Position
+    {
         $spawn = $worldData->getSpawn();
         $chunks = $worldData->getChunks();
         $spawnChunkHash = World::chunkHash($spawn->getFloorX() >> 4, $spawn->getFloorZ() >> 4);
@@ -375,7 +400,8 @@ class ReplayPlayer {
         return Position::fromObject($spawn, $world);
     }
 
-    private function removeCurrentWorld(): void {
+    private function removeCurrentWorld(): void
+    {
         if ($this->world === null) {
             return;
         }

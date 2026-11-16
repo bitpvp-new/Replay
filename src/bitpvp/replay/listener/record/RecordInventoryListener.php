@@ -12,8 +12,8 @@ use pocketmine\inventory\Inventory;
 use pocketmine\inventory\InventoryListener;
 use pocketmine\item\Item;
 
-final class RecordInventoryListener implements InventoryListener {
-
+final class RecordInventoryListener implements InventoryListener
+{
     /** @var array<int, array<int, self>> */
     private static array $listeners = [];
 
@@ -21,7 +21,8 @@ final class RecordInventoryListener implements InventoryListener {
         private Recorder $recorder
     ) {}
 
-    public static function addListener(Recorder $recorder, Living $living): void {
+    public static function addListener(Recorder $recorder, Living $living): void
+    {
         $entityId = $living->getId();
         $recorderId = spl_object_id($recorder);
         if (isset(self::$listeners[$entityId][$recorderId])) {
@@ -36,7 +37,8 @@ final class RecordInventoryListener implements InventoryListener {
         }
     }
 
-    public static function removeListeners(Living $living, Recorder $recorder): void {
+    public static function removeListeners(Living $living, Recorder $recorder): void
+    {
         $entityId = $living->getId();
         $recorderId = spl_object_id($recorder);
         $listener = self::$listeners[$entityId][$recorderId] ?? null;
@@ -54,15 +56,18 @@ final class RecordInventoryListener implements InventoryListener {
         }
     }
 
-    public function onSlotChange(Inventory $inventory, int $slot, Item $oldItem): void {
+    public function onSlotChange(Inventory $inventory, int $slot, Item $oldItem): void
+    {
         $this->record($inventory, $slot);
     }
 
-    public function onContentChange(Inventory $inventory, array $oldContents): void {
+    public function onContentChange(Inventory $inventory, array $oldContents): void
+    {
         $this->record($inventory);
     }
 
-    private function record(Inventory $inventory, ?int $slot = null): void {
+    private function record(Inventory $inventory, ?int $slot = null): void
+    {
         $holder = $inventory->getHolder();
         if (!$holder instanceof Living || !$holder->isAlive() || !$this->recorder->canRecordEntity($holder)) {
             return;

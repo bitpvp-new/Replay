@@ -9,7 +9,8 @@ use bitpvp\replay\entity\ReplayEntity;
 use bitpvp\replay\entity\ReplayEntityTrait;
 use pocketmine\entity\Entity;
 
-class DefaultReplayEntity extends Entity implements ReplayEntity {
+class DefaultReplayEntity extends Entity implements ReplayEntity
+{
     use ReplayEntityTrait;
     use CustomNetworkIdTrait;
 }

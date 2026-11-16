@@ -7,14 +7,15 @@ namespace bitpvp\replay\thread\packet;
 use bitpvp\replay\thread\result\DeleteStorageFileResultPacket;
 use bitpvp\replay\thread\ThreadPacket;
 
-final class DeleteStorageFilePacket extends ThreadPacket {
-
+final class DeleteStorageFilePacket extends ThreadPacket
+{
     public function __construct(
         private readonly string $token,
         private readonly string $jsonPaths,
     ) {}
 
-    public function execute(): ?ThreadPacket {
+    public function execute(): ?ThreadPacket
+    {
         $paths = json_decode($this->jsonPaths, true);
         if (is_array($paths)) {
             foreach ($paths as $path) {

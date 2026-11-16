@@ -8,8 +8,8 @@ use pmmp\thread\ThreadSafeArray;
 use pocketmine\snooze\SleeperHandlerEntry;
 use pocketmine\thread\Thread;
 
-final class ReplayThread extends Thread {
-
+final class ReplayThread extends Thread
+{
     /** @var ThreadSafeArray<int, ThreadPacket> */
     private ThreadSafeArray $inQueue;
     /** @var ThreadSafeArray<int, ThreadPacket> */
@@ -22,7 +22,8 @@ final class ReplayThread extends Thread {
         $this->outQueue = new ThreadSafeArray();
     }
 
-    protected function onRun(): void {
+    protected function onRun(): void
+    {
         $notifier = $this->entry->createNotifier();
         while (!$this->isKilled) {
             /** @var ThreadPacket|null $packet */
@@ -49,7 +50,8 @@ final class ReplayThread extends Thread {
         }
     }
 
-    public function submit(ThreadPacket $packet): void {
+    public function submit(ThreadPacket $packet): void
+    {
         $this->synchronized(function () use ($packet): void {
             $this->inQueue[] = $packet;
             $this->notify();
@@ -59,10 +61,11 @@ final class ReplayThread extends Thread {
     /**
      * @return ThreadPacket[]
      */
-    public function collectResults(): array {
-        return $this->synchronized(function(): array {
+    public function collectResults(): array
+    {
+        return $this->synchronized(function (): array {
             $results = [];
-            while(($r = $this->outQueue->shift()) !== null) {
+            while (($r = $this->outQueue->shift()) !== null) {
                 $results[] = $r;
             }
             return $results;

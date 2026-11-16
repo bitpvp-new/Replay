@@ -6,5 +6,4 @@ namespace bitpvp\replay\action\type;
 
 use bitpvp\replay\action\Action;
 
-abstract class WorldAction extends Action {
-}
+abstract class WorldAction extends Action {}

@@ -6,44 +6,51 @@ namespace bitpvp\replay\data;
 
 use DateTime;
 
-class ReplayInformation {
-
+class ReplayInformation
+{
     public function __construct(
         private string $identifier,
         private DateTime $timestamp,
         private int $duration,
         private string $gameDetails = "",
     ) {
-        if($this->duration <= 0){
+        if ($this->duration <= 0) {
             throw new \InvalidArgumentException("Duration must be greater than 0");
         }
     }
 
-    public static function generateIdentifier(int $length = 8): string {
+    public static function generateIdentifier(int $length = 8): string
+    {
         return substr(bin2hex(random_bytes(16)), 0, $length);
     }
 
-    public static function create(string $identifier, DateTime $timestamp, int $duration, string $details = ""): self {
+    public static function create(string $identifier, DateTime $timestamp, int $duration, string $details = ""): self
+    {
         return new self($identifier, $timestamp, $duration, $details);
     }
 
-    public function getIdentifier(): string {
+    public function getIdentifier(): string
+    {
         return $this->identifier;
     }
 
-    public function getDateTime(): DateTime {
+    public function getDateTime(): DateTime
+    {
         return $this->timestamp;
     }
 
-    public function getDuration(): int {
+    public function getDuration(): int
+    {
         return $this->duration;
     }
 
-    public function getGameDetails(): string {
+    public function getGameDetails(): string
+    {
         return $this->gameDetails;
     }
 
-    public function serialize(): array {
+    public function serialize(): array
+    {
         return [
             "identifier"  => $this->identifier,
             "timestamp"   => $this->timestamp->format("Y-m-d H:i:s"),
@@ -52,15 +59,16 @@ class ReplayInformation {
         ];
     }
 
-    public static function deserialize(array $data): ?static {
+    public static function deserialize(array $data): ?static
+    {
         if (!isset($data['identifier'], $data['timestamp'], $data['duration'])) {
             return null;
         }
         return new static(
-            (string)$data['identifier'],
-            new DateTime((string)$data['timestamp']),
-            (int)$data['duration'],
-            (string)($data['gameDetails'] ?? "")
+            (string) $data['identifier'],
+            new DateTime((string) $data['timestamp']),
+            (int) $data['duration'],
+            (string) ($data['gameDetails'] ?? "")
         );
     }
 }

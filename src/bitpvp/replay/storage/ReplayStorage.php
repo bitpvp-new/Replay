@@ -6,8 +6,8 @@ namespace bitpvp\replay\storage;
 
 use bitpvp\replay\data\ReplayInformation;
 
-interface ReplayStorage {
-
+interface ReplayStorage
+{
     /**
      * @param \Closure(string $replayId): void $onSuccess
      * @param (\Closure(\Throwable $error): void)|null $onError

@@ -42,8 +42,8 @@ use RuntimeException;
 /**
  * Main static entry point for the replay library.
  */
-final class ReplayAPI {
-
+final class ReplayAPI
+{
     private static ?Plugin $plugin = null;
     private static ?PrefixedLogger $logger = null;
     private static ?ReplayThread $thread = null;
@@ -82,12 +82,13 @@ final class ReplayAPI {
 
     private function __construct() {}
 
-    public static function register(PluginBase $plugin): void {
+    public static function register(PluginBase $plugin): void
+    {
         if (self::$plugin !== null) {
             throw new LogicException("ReplayAPI is already registered");
         }
 
-        if(!TaskManager::isRegistered()){
+        if (!TaskManager::isRegistered()) {
             TaskManager::register($plugin);
         }
 
@@ -107,14 +108,15 @@ final class ReplayAPI {
         self::getLogger()->info("Replay API initialized");
         self::getLogger()->debug("Background worker started");
 
-        $plugin->getServer()->getPluginManager()->registerEvent(PluginDisableEvent::class, function(PluginDisableEvent $event): void {
-            if($event->getPlugin() === self::$plugin){
+        $plugin->getServer()->getPluginManager()->registerEvent(PluginDisableEvent::class, function (PluginDisableEvent $event): void {
+            if ($event->getPlugin() === self::$plugin) {
                 self::shutdown();
             }
         }, EventPriority::MONITOR, $plugin);
     }
 
-    public static function shutdown(): void {
+    public static function shutdown(): void
+    {
         self::$logger?->info("Shutting down Replay API");
         foreach (self::$replayPlayers as $replayPlayer) {
             $replayPlayer->end();
@@ -128,20 +130,24 @@ final class ReplayAPI {
         self::$storage = null;
     }
 
-    public static function getLogger(): PrefixedLogger {
+    public static function getLogger(): PrefixedLogger
+    {
         self::assertRegistered();
         return self::$logger;
     }
 
-    public static function setStorage(?ReplayStorage $storage): void {
+    public static function setStorage(?ReplayStorage $storage): void
+    {
         self::$storage = $storage;
     }
 
-    public static function getStorage(): ?ReplayStorage {
+    public static function getStorage(): ?ReplayStorage
+    {
         return self::$storage;
     }
 
-    public static function getThread(): ReplayThread {
+    public static function getThread(): ReplayThread
+    {
         self::assertRegistered();
         return self::$thread;
     }
@@ -153,7 +159,7 @@ final class ReplayAPI {
         RecordSettings $settings,
         World $world,
         \Closure $onSaved
-    ): string {
+    ): Recorder {
         self::assertRegistered();
         if ($settings->getStorage() === null && self::$storage === null && $settings->getSavePath() === "") {
             throw new LogicException("A save path or ReplayStorage is required to record a replay");
@@ -162,7 +168,7 @@ final class ReplayAPI {
         $replayId = ReplayInformation::generateIdentifier();
         self::getLogger()->info("Started recording replay $replayId in world " . $world->getFolderName());
         self::getLogger()->debug("Recording interval: " . $settings->getRecordInterval() . " tick(s)");
-        self::$saveCallbacks[$replayId] = static function(string $id, bool $success, string $message) use ($onSaved, $replayId): void {
+        self::$saveCallbacks[$replayId] = static function (string $id, bool $success, string $message) use ($onSaved, $replayId): void {
             unset(self::$saveCallbacks[$replayId]);
             if ($success) {
                 self::getLogger()->info("Saved replay $id: $message");
@@ -171,12 +177,12 @@ final class ReplayAPI {
             }
             $onSaved($id, $success, $message);
         };
-        self::$recorders[$replayId] = new Recorder($settings, self::$thread, $world);
 
-        return $replayId;
+        return self::$recorders[$replayId] = new Recorder($settings, self::$thread, $replayId, $world);
     }
 
-    public static function stopRecording(string $replayId): void {
+    public static function stopRecording(string $replayId): void
+    {
         self::assertRegistered();
 
         $recorder = self::$recorders[$replayId] ?? null;
@@ -188,11 +194,13 @@ final class ReplayAPI {
         unset(self::$recorders[$replayId]);
     }
 
-    public static function isRecording(string $replayId): bool {
+    public static function isRecording(string $replayId): bool
+    {
         return isset(self::$recorders[$replayId]);
     }
 
-    public static function getRecorder(string $replayId): ?Recorder {
+    public static function getRecorder(string $replayId): ?Recorder
+    {
         return self::$recorders[$replayId] ?? null;
     }
 
@@ -235,10 +243,10 @@ final class ReplayAPI {
 
         $store->load(
             $replayId,
-            function(ReplayInformation $information, string $rawBuffer) use ($settings, $viewer, $onReady, $replayId): void {
+            function (ReplayInformation $information, string $rawBuffer) use ($settings, $viewer, $onReady, $replayId): void {
                 ReplayData::decodeAsync($settings->getPlugin(), $information, $rawBuffer, $settings->getSerializationBatchSize())
                     ->onCompletion(
-                        function(ReplayData $replayData) use ($settings, $viewer, $onReady, $replayId): void {
+                        function (ReplayData $replayData) use ($settings, $viewer, $onReady, $replayId): void {
                             try {
                                 $uuid = $viewer->getUniqueId()->toString();
                                 $replayPlayer = self::createReplayPlayer($settings, $viewer, $replayData, $uuid);
@@ -254,14 +262,14 @@ final class ReplayAPI {
                                 $onReady(true, $replayPlayer, "");
                             }
                         },
-                        static function() use ($onReady): void {
+                        static function () use ($onReady): void {
                             if ($onReady !== null) {
                                 $onReady(false, null, "Replay decoding task was cancelled or failed; see the server log");
                             }
                         }
                     );
             },
-            function(\Throwable $error) use ($onReady, $replayId): void {
+            function (\Throwable $error) use ($onReady, $replayId): void {
                 self::getLogger()->error("Failed to load replay $replayId from storage: " . $error->getMessage());
                 if ($onReady !== null) {
                     $onReady(false, null, $error->getMessage());
@@ -270,7 +278,8 @@ final class ReplayAPI {
         );
     }
 
-    public static function stopReplay(Player $viewer): void {
+    public static function stopReplay(Player $viewer): void
+    {
         $uuid = $viewer->getUniqueId()->toString();
         $player = self::$replayPlayers[$uuid] ?? null;
         if ($player === null) {
@@ -281,45 +290,54 @@ final class ReplayAPI {
         unset(self::$replayPlayers[$uuid]);
     }
 
-    public static function isWatching(Player $viewer): bool {
+    public static function isWatching(Player $viewer): bool
+    {
         return isset(self::$replayPlayers[$viewer->getUniqueId()->toString()]);
     }
 
-    public static function getReplayPlayer(Player $viewer): ?ReplayPlayer {
+    public static function getReplayPlayer(Player $viewer): ?ReplayPlayer
+    {
         return self::$replayPlayers[$viewer->getUniqueId()->toString()] ?? null;
     }
 
-    public static function registerStorageSaveCallback(string $id, \Closure $onSuccess, ?\Closure $onError = null): void {
+    public static function registerStorageSaveCallback(string $id, \Closure $onSuccess, ?\Closure $onError = null): void
+    {
         self::$storageSaveCallbacks[$id] = [$onSuccess, $onError];
     }
 
-    public static function registerStorageLoadCallback(string $id, \Closure $onSuccess, ?\Closure $onError = null): void {
+    public static function registerStorageLoadCallback(string $id, \Closure $onSuccess, ?\Closure $onError = null): void
+    {
         self::$storageLoadCallbacks[$id] = [$onSuccess, $onError];
     }
 
-    public static function registerStorageDeleteCallback(string $token, \Closure $onSuccess, ?\Closure $onError = null): void {
+    public static function registerStorageDeleteCallback(string $token, \Closure $onSuccess, ?\Closure $onError = null): void
+    {
         self::$storageDeleteCallbacks[$token] = [$onSuccess, $onError];
     }
 
-    public static function registerStorageFetchAllCallback(string $token, \Closure $onSuccess, ?\Closure $onError = null): void {
+    public static function registerStorageFetchAllCallback(string $token, \Closure $onSuccess, ?\Closure $onError = null): void
+    {
         self::$storageFetchAllCallbacks[$token] = [$onSuccess, $onError];
     }
 
-    public static function compressInBackground(string $rawBuffer, \Closure $onSuccess, ?\Closure $onError = null): void {
+    public static function compressInBackground(string $rawBuffer, \Closure $onSuccess, ?\Closure $onError = null): void
+    {
         self::assertRegistered();
         $token = uniqid("comp_");
         self::$compressCallbacks[$token] = [$onSuccess, $onError];
         self::$thread->submit(new CompressPacket($token, $rawBuffer));
     }
 
-    public static function decompressInBackground(string $compressed, \Closure $onSuccess, ?\Closure $onError = null): void {
+    public static function decompressInBackground(string $compressed, \Closure $onSuccess, ?\Closure $onError = null): void
+    {
         self::assertRegistered();
         $token = uniqid("decomp_");
         self::$decompressCallbacks[$token] = [$onSuccess, $onError];
         self::$thread->submit(new DecompressPacket($token, $compressed));
     }
 
-    private static function collectThreadResults(): void {
+    private static function collectThreadResults(): void
+    {
         if (self::$thread === null) {
             return;
         }
@@ -359,7 +377,7 @@ final class ReplayAPI {
 
                 ReplayData::decodeAsync($settings->getPlugin(), $information, $rawBuffer, $settings->getSerializationBatchSize())
                     ->onCompletion(
-                        function(ReplayData $replayData) use ($settings, $viewer, $onReady, $id): void {
+                        function (ReplayData $replayData) use ($settings, $viewer, $onReady, $id): void {
                             try {
                                 $uuid = $viewer->getUniqueId()->toString();
                                 $replayPlayer = self::createReplayPlayer($settings, $viewer, $replayData, $uuid);
@@ -375,7 +393,7 @@ final class ReplayAPI {
                                 $onReady(true, $replayPlayer, "");
                             }
                         },
-                        static function() use ($onReady, $id): void {
+                        static function () use ($onReady, $id): void {
                             self::getLogger()->error("Failed to decode replay $id; decoding task was cancelled or failed");
                             if ($onReady !== null) {
                                 $onReady(false, null, "Replay decoding task was cancelled or failed; see the server log");
@@ -402,7 +420,7 @@ final class ReplayAPI {
 
                 if ($packet->isSuccess()) {
                     if ($onSuccess !== null) {
-                        $onSuccess($packet->getJsonRaw(), (string)$packet->getRawBuffer());
+                        $onSuccess($packet->getJsonRaw(), (string) $packet->getRawBuffer());
                     }
                 } else {
                     $err = new RuntimeException($packet->getError() ?? "Failed to load replay storage");
@@ -464,17 +482,19 @@ final class ReplayAPI {
         }
     }
 
-    private static function assertRegistered(): void {
+    private static function assertRegistered(): void
+    {
         if (self::$plugin === null || self::$thread === null) {
             throw new LogicException("ReplayAPI is not registered. Call ReplayAPI::register(\$plugin) in onEnable().");
         }
     }
 
-    private static function createReplayPlayer(ReplaySettings $settings, Player $viewer, ReplayData $data, string $uuid): ReplayPlayer {
+    private static function createReplayPlayer(ReplaySettings $settings, Player $viewer, ReplayData $data, string $uuid): ReplayPlayer
+    {
         if (isset(self::$replayPlayers[$uuid])) {
             self::$replayPlayers[$uuid]->end();
         }
-        $replayPlayer = new ReplayPlayer($settings, $viewer, $data, static function(ReplayPlayer $ended) use ($uuid): void {
+        $replayPlayer = new ReplayPlayer($settings, $viewer, $data, static function (ReplayPlayer $ended) use ($uuid): void {
             if ((self::$replayPlayers[$uuid] ?? null) === $ended) {
                 unset(self::$replayPlayers[$uuid]);
             }
@@ -485,7 +505,8 @@ final class ReplayAPI {
         return $replayPlayer;
     }
 
-    public static function isRegistered(): bool {
+    public static function isRegistered(): bool
+    {
         return self::$plugin !== null;
     }
 }

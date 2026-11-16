@@ -37,8 +37,8 @@ use UnexpectedValueException;
 /**
  * Owns the replay's binary representation of Bedrock-facing values instead of delegating to packet serializers.
  */
-final class ReplayProtocol {
-
+final class ReplayProtocol
+{
     private const int METADATA_BYTE = 0;
     private const int METADATA_SHORT = 1;
     private const int METADATA_INT = 2;
@@ -51,7 +51,8 @@ final class ReplayProtocol {
 
     private function __construct() {}
 
-    public static function writeSkin(ByteBufferWriter $writer, SkinData $skin): void {
+    public static function writeSkin(ByteBufferWriter $writer, SkinData $skin): void
+    {
         self::writeString($writer, $skin->getSkinId());
         self::writeString($writer, $skin->getPlayFabId());
         self::writeString($writer, $skin->getResourcePatch());
@@ -103,7 +104,8 @@ final class ReplayProtocol {
         self::writeBool($writer, $skin->isOverride());
     }
 
-    public static function readSkin(ByteBufferReader $reader): SkinData {
+    public static function readSkin(ByteBufferReader $reader): SkinData
+    {
         $skinId = self::readString($reader);
         $playFabId = self::readString($reader);
         $resourcePatch = self::readString($reader);
@@ -168,7 +170,7 @@ final class ReplayProtocol {
             $armSize,
             $skinColor,
             $personaPieces,
-            $pieceTintColors
+            $pieceTintColors,
         ];
 
         if (method_exists(SkinData::class, "getGeometryDataJson")) {
@@ -193,11 +195,13 @@ final class ReplayProtocol {
         return new SkinData(...$skinDataArguments);
     }
 
-    private static function getSkinGeometryData(SkinData $skin): string {
+    private static function getSkinGeometryData(SkinData $skin): string
+    {
         return method_exists($skin, "getGeometryDataJson") ? $skin->getGeometryDataJson() : $skin->getGeometryData();
     }
 
-    private static function getSkinArmSize(SkinData $skin): string {
+    private static function getSkinArmSize(SkinData $skin): string
+    {
         $armSize = $skin->getArmSize();
         if (is_string($armSize)) {
             return $armSize;
@@ -208,7 +212,8 @@ final class ReplayProtocol {
         return strtolower($armSize->name);
     }
 
-    private static function getSkinColor(SkinData $skin): string {
+    private static function getSkinColor(SkinData $skin): string
+    {
         $color = $skin->getSkinColor();
         if (is_string($color)) {
             return $color;
@@ -216,7 +221,8 @@ final class ReplayProtocol {
         return sprintf("@argb:%08x", $color->toARGB());
     }
 
-    private static function convertSkinArmSize(string $armSize): mixed {
+    private static function convertSkinArmSize(string $armSize): mixed
+    {
         $constructor = new ReflectionMethod(SkinData::class, "__construct");
         $type = $constructor->getParameters()[11]->getType();
         if (!$type instanceof ReflectionNamedType || !enum_exists($type->getName())) {
@@ -236,7 +242,8 @@ final class ReplayProtocol {
         throw new UnexpectedValueException("Unsupported skin arm size '$armSize'");
     }
 
-    private static function convertSkinColor(string $skinColor): mixed {
+    private static function convertSkinColor(string $skinColor): mixed
+    {
         $constructor = new ReflectionMethod(SkinData::class, "__construct");
         $type = $constructor->getParameters()[12]->getType();
         if (!$type instanceof ReflectionNamedType || !class_exists($type->getName())) {
@@ -246,18 +253,19 @@ final class ReplayProtocol {
         $colorClass = $type->getName();
         assert($colorClass instanceof Color);
         if (preg_match('/^@argb:([0-9a-fA-F]{8})$/', $skinColor, $matches) === 1) {
-            return $colorClass::fromARGB((int)hexdec($matches[1]));
+            return $colorClass::fromARGB((int) hexdec($matches[1]));
         }
 
         if (preg_match('/^#?([0-9a-fA-F]{6})$/', $skinColor, $matches) === 1) {
-            return $colorClass::fromRGB((int)hexdec($matches[1]));
+            return $colorClass::fromRGB((int) hexdec($matches[1]));
         }
 
         return new $colorClass(0, 0, 0, 0);
     }
 
     /** @param array<int, MetadataProperty> $metadata */
-    public static function writeEntityMetadata(ByteBufferWriter $writer, array $metadata): void {
+    public static function writeEntityMetadata(ByteBufferWriter $writer, array $metadata): void
+    {
         VarInt::writeUnsignedInt($writer, count($metadata));
         foreach ($metadata as $key => $property) {
             VarInt::writeUnsignedInt($writer, $key);
@@ -267,7 +275,8 @@ final class ReplayProtocol {
     }
 
     /** @return array<int, MetadataProperty> */
-    public static function readEntityMetadata(ByteBufferReader $reader): array {
+    public static function readEntityMetadata(ByteBufferReader $reader): array
+    {
         $count = VarInt::readUnsignedInt($reader);
         $metadata = [];
         for ($i = 0; $i < $count; ++$i) {
@@ -278,7 +287,8 @@ final class ReplayProtocol {
         return $metadata;
     }
 
-    private static function getMetadataType(MetadataProperty $property): int {
+    private static function getMetadataType(MetadataProperty $property): int
+    {
         return match (true) {
             $property instanceof ByteMetadataProperty => self::METADATA_BYTE,
             $property instanceof ShortMetadataProperty => self::METADATA_SHORT,
@@ -293,7 +303,8 @@ final class ReplayProtocol {
         };
     }
 
-    private static function writeMetadataValue(ByteBufferWriter $writer, MetadataProperty $property): void {
+    private static function writeMetadataValue(ByteBufferWriter $writer, MetadataProperty $property): void
+    {
         if ($property instanceof ByteMetadataProperty) {
             Byte::writeSigned($writer, $property->getValue());
         } elseif ($property instanceof ShortMetadataProperty) {
@@ -315,13 +326,14 @@ final class ReplayProtocol {
             VarInt::writeSignedLong($writer, $property->getValue());
         } elseif ($property instanceof Vec3MetadataProperty) {
             $value = $property->getValue();
-            LE::writeFloat($writer, (float)$value->x);
-            LE::writeFloat($writer, (float)$value->y);
-            LE::writeFloat($writer, (float)$value->z);
+            LE::writeFloat($writer, (float) $value->x);
+            LE::writeFloat($writer, (float) $value->y);
+            LE::writeFloat($writer, (float) $value->z);
         }
     }
 
-    private static function readMetadataValue(ByteBufferReader $reader, int $type): MetadataProperty {
+    private static function readMetadataValue(ByteBufferReader $reader, int $type): MetadataProperty
+    {
         return match ($type) {
             self::METADATA_BYTE => new ByteMetadataProperty(Byte::readSigned($reader)),
             self::METADATA_SHORT => new ShortMetadataProperty(LE::readSignedShort($reader)),
@@ -344,7 +356,8 @@ final class ReplayProtocol {
         };
     }
 
-    private static function readNetworkNbtCompound(ByteBufferReader $reader): CompoundTag {
+    private static function readNetworkNbtCompound(ByteBufferReader $reader): CompoundTag
+    {
         $offset = $reader->getOffset();
         try {
             return (new ReplayNbtSerializer())->read($reader->getData(), $offset, 512)->mustGetCompoundTag();
@@ -353,32 +366,38 @@ final class ReplayProtocol {
         }
     }
 
-    private static function writeSkinImage(ByteBufferWriter $writer, SkinImage $image): void {
+    private static function writeSkinImage(ByteBufferWriter $writer, SkinImage $image): void
+    {
         LE::writeUnsignedInt($writer, $image->getWidth());
         LE::writeUnsignedInt($writer, $image->getHeight());
         self::writeString($writer, $image->getData());
     }
 
-    private static function readSkinImage(ByteBufferReader $reader): SkinImage {
+    private static function readSkinImage(ByteBufferReader $reader): SkinImage
+    {
         $width = LE::readUnsignedInt($reader);
         $height = LE::readUnsignedInt($reader);
         return new SkinImage($height, $width, self::readString($reader));
     }
 
-    private static function writeString(ByteBufferWriter $writer, string $value): void {
+    private static function writeString(ByteBufferWriter $writer, string $value): void
+    {
         VarInt::writeUnsignedInt($writer, strlen($value));
         $writer->writeByteArray($value);
     }
 
-    private static function readString(ByteBufferReader $reader): string {
+    private static function readString(ByteBufferReader $reader): string
+    {
         return $reader->readByteArray(VarInt::readUnsignedInt($reader));
     }
 
-    private static function writeBool(ByteBufferWriter $writer, bool $value): void {
+    private static function writeBool(ByteBufferWriter $writer, bool $value): void
+    {
         Byte::writeUnsigned($writer, $value ? 1 : 0);
     }
 
-    private static function readBool(ByteBufferReader $reader): bool {
+    private static function readBool(ByteBufferReader $reader): bool
+    {
         return Byte::readUnsigned($reader) !== 0;
     }
 }

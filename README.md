@@ -29,7 +29,7 @@ $settings = new RecordSettings(
     recordInterval: 1 // ticks
 );
 
-$replayId = ReplayAPI::startRecording(
+$recorder = ReplayAPI::startRecording(
     $settings,
     $world,
     // onSave closure
@@ -37,6 +37,13 @@ $replayId = ReplayAPI::startRecording(
         // your code here
     }
 );
+
+$replayId = $recorder->getIdentifier();
+
+// if this returns false, it will end itself
+$recorder->addEventEndingHandler(function(PlayerDeathEvent $event): bool {
+    return true;
+})
 
 ReplayAPI::stopRecording($replayId);
 ```
@@ -75,7 +82,7 @@ ReplayAPI::startReplay(
     $this->getDataFolder() . "replays/{$replayId}.replay", 
     function(bool $success, ?ReplayPlayer $replay, string $error) : void{
         if(!$success || $replay === null){
-            $this->getLogger()->error("No se pudo cargar la replay: " . $error);
+            $this->getLogger()->error("Couldnt load replay: " . $error);
             return;
         }
         $replay->unpause();
@@ -132,7 +139,7 @@ $inventory = $replay->getEntityInventory($playerEntityId);
 if($inventory !== null){
     $items = $inventory["contents"];
     $armor = $inventory["armor"];
-    $offhand = $inventory["offhand"]; // nullable
+    $offhand = $inventory["offhand"];
     $heldSlot = $inventory["heldSlot"]; 
 }
 ```

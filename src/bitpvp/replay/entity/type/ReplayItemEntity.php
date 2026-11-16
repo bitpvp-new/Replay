@@ -11,7 +11,8 @@ use pocketmine\entity\object\ItemEntity;
 use pocketmine\item\Item;
 use pocketmine\nbt\tag\CompoundTag;
 
-class ReplayItemEntity extends ItemEntity implements ReplayEntity {
+class ReplayItemEntity extends ItemEntity implements ReplayEntity
+{
     use ReplayEntityTrait;
 
     public function __construct(
@@ -24,7 +25,8 @@ class ReplayItemEntity extends ItemEntity implements ReplayEntity {
         $this->setCanSaveWithChunk(false);
     }
 
-    public function getCustomNetworkTypeId(): string {
+    public function getCustomNetworkTypeId(): string
+    {
         return self::getNetworkTypeId();
     }
 }

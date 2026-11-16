@@ -6,8 +6,8 @@ namespace bitpvp\replay\thread\result;
 
 use bitpvp\replay\thread\ThreadPacket;
 
-final class LoadReplayResultPacket extends ThreadPacket {
-
+final class LoadReplayResultPacket extends ThreadPacket
+{
     public function __construct(
         private readonly string $replayId,
         private readonly bool $success,
@@ -15,23 +15,28 @@ final class LoadReplayResultPacket extends ThreadPacket {
         private readonly ?string $error,
     ) {}
 
-    public function execute(): ?ThreadPacket {
+    public function execute(): ?ThreadPacket
+    {
         return null;
     }
 
-    public function getReplayId(): string {
+    public function getReplayId(): string
+    {
         return $this->replayId;
     }
 
-    public function isSuccess(): bool {
+    public function isSuccess(): bool
+    {
         return $this->success;
     }
 
-    public function getRawBuffer(): ?string {
+    public function getRawBuffer(): ?string
+    {
         return $this->rawBuffer;
     }
 
-    public function getError(): ?string {
+    public function getError(): ?string
+    {
         return $this->error;
     }
 }

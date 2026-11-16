@@ -13,27 +13,32 @@ use bitpvp\replay\thread\packet\LoadJsonStoragePacket;
 use bitpvp\replay\thread\packet\SaveJsonStoragePacket;
 use RuntimeException;
 
-final class JsonReplayStorage implements ReplayStorage {
-
+final class JsonReplayStorage implements ReplayStorage
+{
     private string $directory;
 
-    public function __construct(string $directory) {
+    public function __construct(string $directory)
+    {
         $this->directory = rtrim($directory, '/\\');
     }
 
-    public function getDirectory(): string {
+    public function getDirectory(): string
+    {
         return $this->directory;
     }
 
-    public function getJsonPath(string $replayId): string {
+    public function getJsonPath(string $replayId): string
+    {
         return $this->directory . DIRECTORY_SEPARATOR . $replayId . ".json";
     }
 
-    public function getReplayPath(string $replayId): string {
+    public function getReplayPath(string $replayId): string
+    {
         return $this->directory . DIRECTORY_SEPARATOR . $replayId . ".replay";
     }
 
-    public function save(ReplayInformation $information, string $compressedData, \Closure $onSuccess, ?\Closure $onError = null): void {
+    public function save(ReplayInformation $information, string $compressedData, \Closure $onSuccess, ?\Closure $onError = null): void
+    {
         $id = $information->getIdentifier();
         $json = json_encode($information->serialize(), JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
         if ($json === false) {
@@ -53,8 +58,9 @@ final class JsonReplayStorage implements ReplayStorage {
         ));
     }
 
-    public function load(string $replayId, \Closure $onSuccess, ?\Closure $onError = null): void {
-        ReplayAPI::registerStorageLoadCallback($replayId, function(string $jsonRaw, string $rawBuffer) use ($onSuccess, $onError): void {
+    public function load(string $replayId, \Closure $onSuccess, ?\Closure $onError = null): void
+    {
+        ReplayAPI::registerStorageLoadCallback($replayId, function (string $jsonRaw, string $rawBuffer) use ($onSuccess, $onError): void {
             $data = json_decode($jsonRaw, true);
             if (!is_array($data)) {
                 $err = new RuntimeException("Corrupted JSON metadata");
@@ -81,7 +87,8 @@ final class JsonReplayStorage implements ReplayStorage {
         ));
     }
 
-    public function delete(string $replayId, ?\Closure $onSuccess = null, ?\Closure $onError = null): void {
+    public function delete(string $replayId, ?\Closure $onSuccess = null, ?\Closure $onError = null): void
+    {
         $token = uniqid("del_");
         $paths = [$this->getJsonPath($replayId), $this->getReplayPath($replayId)];
 
@@ -92,13 +99,15 @@ final class JsonReplayStorage implements ReplayStorage {
         ));
     }
 
-    public function fetch(string $replayId, \Closure $onSuccess, ?\Closure $onError = null): void {
+    public function fetch(string $replayId, \Closure $onSuccess, ?\Closure $onError = null): void
+    {
         $this->load($replayId, $onSuccess(...), $onError);
     }
 
-    public function fetchAll(\Closure $onSuccess, ?\Closure $onError = null): void {
+    public function fetchAll(\Closure $onSuccess, ?\Closure $onError = null): void
+    {
         $token = uniqid("fetch_all_");
-        ReplayAPI::registerStorageFetchAllCallback($token, function(string $itemsJson) use ($onSuccess): void {
+        ReplayAPI::registerStorageFetchAllCallback($token, function (string $itemsJson) use ($onSuccess): void {
             $rawItems = json_decode($itemsJson, true);
             $replays = [];
             if (is_array($rawItems)) {

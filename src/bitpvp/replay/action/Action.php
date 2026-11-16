@@ -7,11 +7,12 @@ namespace bitpvp\replay\action;
 use bitpvp\replay\replayer\ReplayPlayer;
 use bitpvp\replay\utils\BinaryStream;
 
-abstract class Action {
-
+abstract class Action
+{
     protected const int ID = ActionIds::NONE;
 
-    public static function id(): int {
+    public static function id(): int
+    {
         return static::ID;
     }
 
@@ -21,7 +22,8 @@ abstract class Action {
 
     abstract public function handle(ReplayPlayer $replay): void;
 
-    public function handleReversed(ReplayPlayer $replay): ?Action {
+    public function handleReversed(ReplayPlayer $replay): ?Action
+    {
         return $this;
     }
 }

@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace bitpvp\replay\action;
 
-interface ActionIds {
+interface ActionIds
+{
     public const NONE                = 0;
     public const PLAYER_ANIMATION   = 1;
     public const ENTITY_CHANGE_SKIN = 2;

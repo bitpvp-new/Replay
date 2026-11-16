@@ -28,8 +28,8 @@ use pocketmine\network\mcpe\convert\TypeConverter;
 use pocketmine\network\mcpe\protocol\types\entity\MetadataProperty;
 use pocketmine\player\Player;
 
-class EntitySpawnAction extends EntityAction {
-
+class EntitySpawnAction extends EntityAction
+{
     protected const int ID = ActionIds::ENTITY_SPAWN;
 
     private string $networkId;
@@ -46,7 +46,8 @@ class EntitySpawnAction extends EntityAction {
     private array $armorContents = [];
     private ?Skin $skin = null;
 
-    public static function create(Entity $entity): static {
+    public static function create(Entity $entity): static
+    {
         $action = new static();
         if ($entity instanceof ReplayEntity) {
             $action->entityId = $entity->getActualId();
@@ -78,7 +79,8 @@ class EntitySpawnAction extends EntityAction {
         return $action;
     }
 
-    public function serialize(BinaryStream $stream): void {
+    public function serialize(BinaryStream $stream): void
+    {
         parent::serialize($stream);
         $stream->putString($this->networkId);
         $stream->putBool($this->isPlayer);
@@ -99,7 +101,8 @@ class EntitySpawnAction extends EntityAction {
         $stream->putContents($this->armorContents);
     }
 
-    public function deserialize(BinaryStream $stream): void {
+    public function deserialize(BinaryStream $stream): void
+    {
         parent::deserialize($stream);
         $this->networkId = $stream->getString();
         $this->isPlayer = $stream->getBool();
@@ -117,7 +120,8 @@ class EntitySpawnAction extends EntityAction {
         $this->armorContents = $stream->getContents();
     }
 
-    public function handle(ReplayPlayer $replay): void {
+    public function handle(ReplayPlayer $replay): void
+    {
         $entity = $this->createEntity($replay);
         $entity->setNameTag($this->nameTag);
         $entity->setNameTagVisible(true);
@@ -138,11 +142,13 @@ class EntitySpawnAction extends EntityAction {
         $replay->spawnEntity($entity);
     }
 
-    public function handleReversed(ReplayPlayer $replay): ?Action {
+    public function handleReversed(ReplayPlayer $replay): ?Action
+    {
         return ActorDespawnAction::create($this->entityId);
     }
 
-    protected function createEntity(ReplayPlayer $replay): Entity {
+    protected function createEntity(ReplayPlayer $replay): Entity
+    {
         $location = Location::fromObject($this->location, $replay->getWorld(), $this->location->yaw, $this->location->pitch);
         return match (true) {
             $this->skin !== null => new ReplayHuman($this->entityId, $this->isPlayer, $this->size, $this->offsetPosition, $location, $this->skin),
@@ -151,7 +157,8 @@ class EntitySpawnAction extends EntityAction {
         };
     }
 
-    protected function shouldCreateLiving(): bool {
+    protected function shouldCreateLiving(): bool
+    {
         return count($this->armorContents) > 0;
     }
 }

@@ -6,27 +6,31 @@ namespace bitpvp\replay\thread\result;
 
 use bitpvp\replay\thread\ThreadPacket;
 
-final class DeleteStorageFileResultPacket extends ThreadPacket {
-
+final class DeleteStorageFileResultPacket extends ThreadPacket
+{
     public function __construct(
         private readonly string $token,
         private readonly bool $success,
         private readonly ?string $error,
     ) {}
 
-    public function execute(): ?ThreadPacket {
+    public function execute(): ?ThreadPacket
+    {
         return null;
     }
 
-    public function getToken(): string {
+    public function getToken(): string
+    {
         return $this->token;
     }
 
-    public function isSuccess(): bool {
+    public function isSuccess(): bool
+    {
         return $this->success;
     }
 
-    public function getError(): ?string {
+    public function getError(): ?string
+    {
         return $this->error;
     }
 }

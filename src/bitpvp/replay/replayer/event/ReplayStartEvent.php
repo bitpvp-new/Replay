@@ -4,5 +4,4 @@ declare(strict_types=1);
 
 namespace bitpvp\replay\replayer\event;
 
-class ReplayStartEvent extends ReplayEvent {
-}
+class ReplayStartEvent extends ReplayEvent {}

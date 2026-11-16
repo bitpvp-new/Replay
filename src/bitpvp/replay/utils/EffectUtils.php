@@ -9,8 +9,8 @@ use pocketmine\entity\effect\StringToEffectParser;
 use pocketmine\entity\effect\VanillaEffects;
 use pocketmine\lang\Translatable;
 
-final class EffectUtils {
-
+final class EffectUtils
+{
     /** @var array<string, string> */
     private static array $aliasesByType = [];
 
@@ -19,7 +19,8 @@ final class EffectUtils {
 
     private function __construct() {}
 
-    public static function findAlias(Effect $effect): ?string {
+    public static function findAlias(Effect $effect): ?string
+    {
         $parser = StringToEffectParser::getInstance();
         $parserAliases = $parser->getKnownAliases();
 
@@ -31,11 +32,12 @@ final class EffectUtils {
     }
 
     /** @param list<string> $parserAliases */
-    private static function rebuildAliasIndex(StringToEffectParser $parser, array $parserAliases): void {
+    private static function rebuildAliasIndex(StringToEffectParser $parser, array $parserAliases): void
+    {
         self::$aliasesByType = [];
 
         foreach (VanillaEffects::getAll() as $alias => $effect) {
-            self::$aliasesByType[self::getTypeKey($effect)] ??= (string)$alias;
+            self::$aliasesByType[self::getTypeKey($effect)] ??= (string) $alias;
         }
 
         foreach ($parserAliases as $alias) {
@@ -48,7 +50,8 @@ final class EffectUtils {
         self::$cachedParserAliases = $parserAliases;
     }
 
-    private static function getTypeKey(Effect $effect): string {
+    private static function getTypeKey(Effect $effect): string
+    {
         $name = $effect->getName();
         return $effect::class . "\0" . ($name instanceof Translatable ? $name->getText() : $name);
     }

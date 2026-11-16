@@ -28,7 +28,8 @@ use bitpvp\replay\action\type\world\WorldChangeAction;
 use bitpvp\replay\action\type\world\WorldChangeTimeAction;
 use pocketmine\utils\SingletonTrait;
 
-final class ActionHandler {
+final class ActionHandler
+{
     use SingletonTrait {
         setInstance as private;
         reset as private;
@@ -37,7 +38,8 @@ final class ActionHandler {
     /** @var array<int, Action> */
     private array $actions = [];
 
-    private function __construct() {
+    private function __construct()
+    {
         $this->registerAction(
             new EntitySpawnAction(),
             new EntitySpawnLivingAction(),
@@ -49,15 +51,12 @@ final class ActionHandler {
             new EntityInventoryAction(),
             new EntityPlayEmoteAction(),
             new EntityChangeSkinAction(),
-
             new PlayerAnimationAction(),
             new PlayerChatAction(),
-
             new ActorDeathAction(),
             new ActorDespawnAction(),
             new ActorEventAction(),
             new ActorSetMetadataAction(),
-
             new WorldChangeAction(),
             new WorldChangeTimeAction(),
             new BlockEventAction(),
@@ -67,7 +66,8 @@ final class ActionHandler {
         );
     }
 
-    public function registerAction(Action ...$actions): void {
+    public function registerAction(Action ...$actions): void
+    {
         foreach ($actions as $action) {
             $this->actions[$action::id()] = clone $action;
         }
@@ -76,11 +76,13 @@ final class ActionHandler {
     /**
      * @return array<int, Action>
      */
-    public function getActions(): array {
+    public function getActions(): array
+    {
         return $this->actions;
     }
 
-    public function getAction(int $id): ?Action {
+    public function getAction(int $id): ?Action
+    {
         return isset($this->actions[$id]) ? clone $this->actions[$id] : null;
     }
 }
